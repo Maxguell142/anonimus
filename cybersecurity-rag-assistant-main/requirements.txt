@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+
+langchain
+langchain-community
+langchain-ollama
+langchain-text-splitters
+langchain-huggingface
+
+chromadb
+sentence-transformers
+pypdf
+pandas
