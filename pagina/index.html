@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anonymous // Tactical Cyber HUD & Boceto</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body data-mode="normal">
+
+  <!-- ===================================================================
+       ENCABEZADO TÁCTICO & TELEMETRÍA DE RED
+       =================================================================== -->
+  <header class="hud-header">
+    <div class="top-telemetry-strip">
+      <div class="strip-left">
+        <span class="pulse-indicator"></span>
+        <span>ANONYMOUS KERNEL // V1.0-HYBRID</span>
+        <span>|</span>
+        <span>ARQUITECTURA: SIN DOCKER (NATIVO WIN/LINUX)</span>
+        <span>|</span>
+        <span>PRESUPUESTO RAM: &lt; 300 MB (RYZEN 5 / 8 GB OPTIMIZADO)</span>
+      </div>
+      <div class="strip-right">
+        <span id="header-clock">--:--:-- UTC</span>
+        <span>|</span>
+        <span id="header-latency">LATENCIA: 0.2ms</span>
+        <span>|</span>
+        <span style="color: var(--status-ok);">SYS_STATE: ACTIVO</span>
+      </div>
+    </div>
+
+    <div class="hud-main-bar">
+      <!-- Marca / Identidad -->
+      <div class="hud-brand">
+        <div class="hud-logo-icon">⚡</div>
+        <div>
+          <h1 class="hud-title">ANONYMOUS // BOCETO TÁCTICO</h1>
+        </div>
+        <span class="hud-version-badge">RED + BLUE + ASISTENTE</span>
+      </div>
+
+      <!-- Selector de Modos Tácticos (5 Estados) -->
+      <div class="hud-modes">
+        <button class="mode-btn active" data-mode="normal" onclick="switchMode('normal')">
+          <span>🎯</span> NORMAL
+        </button>
+        <button class="mode-btn" data-mode="attack" onclick="switchMode('attack')">
+          <span>⚔️</span> ATAQUE (RED)
+        </button>
+        <button class="mode-btn" data-mode="defense" onclick="switchMode('defense')">
+          <span>🛡️</span> DEFENSA (BLUE)
+        </button>
+        <button class="mode-btn" data-mode="completed" onclick="switchMode('completed')">
+          <span>✅</span> ÉXITO
+        </button>
+        <button class="mode-btn" data-mode="error" onclick="switchMode('error')">
+          <span>⚠️</span> ERROR
+        </button>
+        <a href="presentacion.html" class="mode-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: rgba(0, 240, 255, 0.15); border-color: var(--accent); color: var(--text-bright); font-weight: 700;">
+          <span>📄</span> PRESENTACIÓN DEL PROYECTO
+        </a>
+      </div>
+
+      <!-- Chip de Enlace Wi-Fi Localhost -->
+      <div class="hud-network-chip" id="wifi-chip" title="Click para copiar enlace Wi-Fi" onclick="copyWifiLink()">
+        <span class="chip-icon">📶</span>
+        <span id="wifi-display-text">WI-FI: http://10.0.5.49:8080</span>
+        <span style="font-size: 10px; opacity: 0.7;">[COPIAR]</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================
+       CONTENEDOR PRINCIPAL TÁCTICO (3 COLUMNAS)
+       =================================================================== -->
+  <main class="hud-container">
+
+    <!-- ---------------------------------------------------------------
+         COLUMNA 1: MOTOR OFENSIVO RED TEAM & ÁRBOL PTT
+         --------------------------------------------------------------- -->
+    <section class="left-column" style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- Panel de Escaneo & Reconocimiento -->
+      <div class="hud-panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-code">RED_01</span>
+            <h2 class="panel-title">ESCÁNER TCP NATIVO</h2>
+          </div>
+          <span class="panel-badge">SOCKETS RAW</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">HOST / IP OBJETIVO:</label>
+          <div class="target-input-row">
+            <input type="text" id="target-ip-input" class="target-input" value="127.0.0.1" placeholder="Ej. 127.0.0.1 o 10.0.5.49">
+            <button class="hud-btn-primary" onclick="triggerScan()" id="btn-scan" style="padding: 8px 12px;">
+              <span>⚡</span> ESCANEAR
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">PUERTOS SELECCIONADOS:</label>
+          <div class="port-tags-container" id="port-selector-container">
+            <span class="port-tag active" data-port="21">21 (FTP)</span>
+            <span class="port-tag active" data-port="22">22 (SSH)</span>
+            <span class="port-tag active" data-port="80">80 (HTTP)</span>
+            <span class="port-tag active" data-port="443">443 (HTTPS)</span>
+            <span class="port-tag active" data-port="3306">3306 (MySQL)</span>
+            <span class="port-tag active" data-port="5000">5000 (Flask)</span>
+            <span class="port-tag active" data-port="7860">7860 (GUI)</span>
+            <span class="port-tag active" data-port="8080">8080 (Web)</span>
+          </div>
+        </div>
+
+        <div id="scan-progress-bar" style="display: none; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+          <div id="scan-progress-fill" style="width: 30%; height: 100%; background: var(--accent); transition: width 0.3s;"></div>
+        </div>
+      </div>
+
+      <!-- Panel de Árbol de Tareas PTT (Pentest Task Tree) -->
+      <div class="hud-panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-code">PTT_CORE</span>
+            <h2 class="panel-title">ÁRBOL PTT (METODOLOGÍA)</h2>
+          </div>
+          <button class="panel-badge" onclick="resetPTT()" style="cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.15);">RESET</button>
+        </div>
+
+        <div class="ptt-tree-list" id="ptt-tree-container">
+          <!-- Cargado dinámicamente vía app.js -->
+        </div>
+      </div>
+
+      <!-- Panel de Hallazgos (Session Findings) -->
+      <div class="hud-panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-code">DB_LOG</span>
+            <h2 class="panel-title">HALLAZGOS REGISTRADOS</h2>
+          </div>
+          <span class="panel-badge" id="findings-counter">2 EVENTOS</span>
+        </div>
+
+        <div class="findings-list" id="findings-container">
+          <!-- Cargado dinámicamente vía app.js -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ---------------------------------------------------------------
+         COLUMNA 2: HOLO RADAR 3D Y TERMINAL TÁCTICA
+         --------------------------------------------------------------- -->
+    <section class="center-column">
+      
+      <!-- Visualizador Holográfico de Núcleo / Radar -->
+      <div class="radar-card">
+        <canvas id="holo-canvas"></canvas>
+
+        <div class="radar-overlay-stats">
+          <div class="stat-item">
+            <span>OBJETIVO ACTIVO</span>
+            <span class="stat-val" id="radar-target-val">127.0.0.1</span>
+          </div>
+          <div class="stat-item" style="align-items: center;">
+            <span>ESTADO NEURAL</span>
+            <span class="stat-val" id="radar-mode-val">MODO NORMAL</span>
+          </div>
+          <div class="stat-item" style="align-items: flex-end;">
+            <span>TRANSMISIÓN WI-FI</span>
+            <span class="stat-val" style="color: var(--status-ok);">0.0.0.0:8080</span>
+          </div>
+        </div>
+
+        <!-- Anillos decorativos de estado -->
+        <div style="position: absolute; bottom: 12px; left: 16px; font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); pointer-events: none;">
+          <span>RADAR SWEEP // SW: ACTIVE</span>
+        </div>
+        <div style="position: absolute; bottom: 12px; right: 16px; font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); pointer-events: none;">
+          <span id="canvas-fps">60 FPS // BUFFER 0 MB</span>
+        </div>
+      </div>
+
+      <!-- Consola / Terminal Interactiva -->
+      <div class="terminal-panel">
+        <div class="terminal-titlebar">
+          <div class="term-dots">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+          </div>
+          <span>ANONYMOUS TACTICAL TERMINAL // WARP INTERACTIVE</span>
+          <span style="font-size: 10px; color: var(--accent);">NATIVO</span>
+        </div>
+
+        <!-- Pantalla de salida de texto de la terminal -->
+        <div class="terminal-screen" id="term-screen">
+          <div class="term-line">
+            <span style="color: var(--accent); font-weight: bold;">======================================================================</span><br>
+            <span style="color: var(--text-bright); font-weight: bold;">  ANONYMOUS PLATAFORMA DE CIBERSEGURIDAD HÍBRIDA (BOCETO HUD)</span><br>
+            <span style="color: var(--text-muted);">  Servidor Web con transmisión por señal de Wi-Fi y Localhost activo.</span><br>
+            <span style="color: var(--accent);">======================================================================</span>
+          </div>
+          <div class="term-line">
+            <span class="term-output">Escribe <b style="color: var(--accent);">'help'</b> para ver los comandos disponibles o utiliza los botones de acceso rápido abajo.</span>
+          </div>
+        </div>
+
+        <!-- Botones de comandos rápidos -->
+        <div class="term-quick-actions">
+          <span class="quick-chip" onclick="executeQuickCommand('status')">⚡ status</span>
+          <span class="quick-chip" onclick="executeQuickCommand('scan 127.0.0.1')">🔍 scan 127.0.0.1</span>
+          <span class="quick-chip" onclick="executeQuickCommand('rag owasp')">📖 rag owasp</span>
+          <span class="quick-chip" onclick="executeQuickCommand('rag mitre')">🛡️ rag mitre</span>
+          <span class="quick-chip" onclick="executeQuickCommand('ptt')">🌳 ptt</span>
+          <span class="quick-chip" onclick="executeQuickCommand('findings')">📋 findings</span>
+          <span class="quick-chip" onclick="executeQuickCommand('clear')">🧹 clear</span>
+        </div>
+
+        <!-- Entrada de comandos por teclado -->
+        <div class="terminal-input-bar">
+          <span class="term-prompt">anonymous@tactical:~$</span>
+          <input type="text" id="terminal-input" class="term-cli-input" placeholder="Escribe un comando (ej: scan 127.0.0.1 o rag sql injection)..." autocomplete="off" autofocus>
+          <button class="hud-btn-primary" onclick="sendTerminalCommand()" style="padding: 6px 12px; font-size: 11px;">
+            ENVIAR
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ---------------------------------------------------------------
+         COLUMNA 3: MOTOR DEFENSIVO BLUE TEAM (RAG) & AGENTSHIELD
+         --------------------------------------------------------------- -->
+    <section class="right-column" style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- Panel Blue Team: Asesor Normativo RAG -->
+      <div class="hud-panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-code">BLUE_RAG</span>
+            <h2 class="panel-title">ASESOR NORMATIVO RAG</h2>
+          </div>
+          <span class="panel-badge">OWASP / MITRE / CIS</span>
+        </div>
+
+        <div class="rag-search-box">
+          <input type="text" id="rag-search-input" class="rag-input" placeholder="Buscar normativa o mitigación...">
+          <button class="hud-btn-primary" onclick="searchRAG()" style="padding: 6px 12px;">
+            BUSCAR
+          </button>
+        </div>
+
+        <!-- Categorías RAG rápidas -->
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <span class="port-tag active" onclick="filterRAG('owasp')" id="btn-rag-owasp">OWASP Top 10</span>
+          <span class="port-tag" onclick="filterRAG('mitre')" id="btn-rag-mitre">MITRE ATT&CK</span>
+          <span class="port-tag" onclick="filterRAG('cis')" id="btn-rag-cis">CIS Controls</span>
+        </div>
+
+        <!-- Tarjetas de Normativas -->
+        <div class="rag-cards-container" id="rag-container">
+          <!-- Cargado dinámicamente vía app.js -->
+        </div>
+      </div>
+
+      <!-- Panel AgentShield: Arnés de Seguridad HITL (Human-in-the-Loop) -->
+      <div class="hud-panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-code">SHIELD_01</span>
+            <h2 class="panel-title">AGENTSHIELD (HITL)</h2>
+          </div>
+          <span class="panel-badge" style="color: var(--status-warning);">HUMAN-IN-THE-LOOP</span>
+        </div>
+
+        <div class="agentshield-banner">
+          <div class="agentshield-header">
+            <span class="shield-tag">MODO SEGURO ACTIVADO</span>
+            <label class="switch-label">
+              <input type="checkbox" id="safe-mode-toggle" checked>
+              <span>HITL Forzado</span>
+            </label>
+          </div>
+          <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+            Previene escaneos accidentales a rangos externos no autorizados y bloquea comandos de riesgo sin confirmación humana previa.
+          </p>
+        </div>
+
+        <!-- Telemetría de Hardware & Ahorro de RAM -->
+        <div style="display: flex; flex-direction: column; gap: 8px; font-family: var(--font-mono); font-size: 11px;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 4px;">
+            <span style="color: var(--text-muted);">USO ESTIMADO RAM:</span>
+            <span style="color: var(--accent); font-weight: bold;" id="ram-meter">&lt; 48 MB (OPTIMIZADO)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 4px;">
+            <span style="color: var(--text-muted);">CONTENEDORES DOCKER:</span>
+            <span style="color: var(--status-ok);">0 (DESACTIVADOS)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">PERSISTENCIA:</span>
+            <span style="color: var(--text-bright);">SQLite + Wiki Markdown</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel de Arquitectura Integrada (Los 5 Proyectos) -->
+      <div class="hud-panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-code">ECOSYSTEM</span>
+            <h2 class="panel-title">MAPA DE INTEGRACIÓN</h2>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
+          <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 4px;">
+            <span style="color: var(--status-purple); font-weight: bold;">PentestGPT</span>
+            <span style="color: var(--text-muted);">Árbol de Tareas PTT</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 4px;">
+            <span style="color: var(--status-ok); font-weight: bold;">Cybersecurity-RAG</span>
+            <span style="color: var(--text-muted);">OWASP / MITRE / CIS</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 4px;">
+            <span style="color: var(--accent); font-weight: bold;">OpenJarvis</span>
+            <span style="color: var(--text-muted);">Despachador & Sesiones</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 4px;">
+            <span style="color: #ffae57; font-weight: bold;">Jarvis</span>
+            <span style="color: var(--text-muted);">Dictado de Voz & UI Web</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 4px;">
+            <span style="color: #ff5964; font-weight: bold;">ECC Agents</span>
+            <span style="color: var(--text-muted);">AgentShield & Guardrails</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ===================================================================
+       MODAL DE CONFIRMACIÓN HUMAN-IN-THE-LOOP (AgentShield)
+       =================================================================== -->
+  <div class="modal-backdrop" id="hitl-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span style="font-size: 20px;">🛡️</span>
+        <h3>AUTORIZACIÓN AGENTSHIELD REQUERIDA</h3>
+      </div>
+      <div class="modal-body">
+        <p>Se ha detectado una operación de auditoría o escaneo hacia un objetivo no local o potencialmente sensible.</p>
+        <div style="margin: 10px 0;">
+          <span style="font-size: 11px; color: var(--text-muted);">OBJETIVO SOLICITADO:</span>
+          <div class="modal-target-box" id="modal-target-display">192.168.1.1</div>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted);">
+          Como parte de los protocolos éticos y de seguridad (HITL), debes confirmar manualmente que posees autorización para auditar este host.
+        </p>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn-cancel" onclick="cancelHitlAction()">CANCELAR</button>
+        <button class="modal-btn-confirm" onclick="confirmHitlAction()">AUTORIZAR Y PROCEDER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shelf de Notificaciones Flotantes (Toasts) -->
+  <div class="toast-shelf" id="toast-shelf"></div>
+
+  <!-- Script de Interacción y Lógica Frontend -->
+  <script src="app.js"></script>
+</body>
+</html>

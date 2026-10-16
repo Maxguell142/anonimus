@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Presentación Integral de Anonymous: Plataforma Híbrida de Ciberseguridad. Contexto detallado, resolución de problemas en el mundo real, flujo operativo interactivo y arquitectura nativa sin Docker.">
+  <title>Anonymous // Presentación del Proyecto & Arquitectura Híbrida</title>
+  <link rel="stylesheet" href="presentacion.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body data-mode="normal">
+
+  <!-- Barra de progreso de lectura superior -->
+  <div id="scroll-progress"></div>
+
+  <!-- ===================================================================
+       ENCABEZADO & NAVEGACIÓN PRINCIPAL
+       =================================================================== -->
+  <header class="site-header" id="top-header">
+    <div class="header-inner">
+      <a href="#hero" class="brand-group" id="header-brand">
+        <div class="brand-icon">⚡</div>
+        <div>
+          <span class="brand-title">ANONYMOUS</span>
+        </div>
+        <span class="brand-badge">PROYECTO // V1.0</span>
+      </a>
+
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a href="#contexto" class="nav-link">1. Contexto & Ideas</a>
+        <a href="#problema" class="nav-link">2. Problema Real</a>
+        <a href="#flujo" class="nav-link">3. Flujo de Usuario</a>
+        <a href="#simulador" class="nav-link">4. Simulador</a>
+        <a href="#comparativa" class="nav-link">5. Comparativa</a>
+        <a href="#faq" class="nav-link">6. FAQ</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Selector rápido de modos tácticos -->
+        <div class="mode-pill-selector" title="Cambiar tema táctico">
+          <button class="mode-pill active" data-mode="normal" onclick="switchMode('normal')">CYAN</button>
+          <button class="mode-pill" data-mode="attack" onclick="switchMode('attack')">RED</button>
+          <button class="mode-pill" data-mode="defense" onclick="switchMode('defense')">BLUE</button>
+        </div>
+
+        <!-- Enlace al Centro de Control HUD Táctico -->
+        <a href="index.html" class="btn-hud-link" id="btn-open-hud" title="Abrir la consola interactiva HUD">
+          <span>⚡</span>
+          <span>CENTRO DE CONTROL</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================
+       HERO SECTION: PORTADA DE IMPACTO
+       =================================================================== -->
+  <section class="hero-section" id="hero">
+    <div class="hero-meta-badge">
+      <span class="hero-pulse-dot"></span>
+      <span>DEFENSA TÉCNICA // PLATAFORMA HÍBRIDA DE CIBERSEGURIDAD</span>
+    </div>
+
+    <h1 class="hero-title">
+      ANONYMOUS: <span class="gradient-text">Ecosistema Híbrido de Ciberseguridad</span> y Asistencia Táctica
+    </h1>
+
+    <p class="hero-subtitle">
+      Fusión sinérgica entre auditoría ofensiva (Red Team), remediación normativa (Blue Team) y contención ética Human-In-The-Loop. Desarrollada 100% nativa en Python, sin dependencias de Docker y optimizada para operar con fluidez en computadoras estándar con 8 GB de RAM.
+    </p>
+
+    <div class="hero-cta-group">
+      <a href="#flujo" class="btn-primary" id="hero-btn-flow">
+        <span>🧭</span>
+        <span>EXPLORAR FLUJO INTERACTIVO</span>
+      </a>
+      <a href="index.html" class="btn-secondary" id="hero-btn-demo">
+        <span>💻</span>
+        <span>ACCEDER AL PANEL HUD EN VIVO</span>
+      </a>
+      <a href="#contexto" class="btn-secondary" id="hero-btn-context">
+        <span>📖</span>
+        <span>VER CONTEXTO & ARQUITECTURA</span>
+      </a>
+    </div>
+
+    <!-- Indicadores clave de rendimiento (KPIs) -->
+    <div class="hero-kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-icon">⚡</span>
+          <span class="kpi-tag">NATIVO</span>
+        </div>
+        <div class="kpi-value">&lt; 60 MB</div>
+        <div class="kpi-label">Consumo de RAM optimizado para procesadores AMD Ryzen 5 y 8 GB.</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-icon">🐳</span>
+          <span class="kpi-tag">SIN DOCKER</span>
+        </div>
+        <div class="kpi-value">0 VMs / WSL</div>
+        <div class="kpi-label">Escáner TCP directo sobre la API de sockets del sistema operativo.</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-icon">🛡️</span>
+          <span class="kpi-tag">ÉTICA & HITL</span>
+        </div>
+        <div class="kpi-value">AgentShield</div>
+        <div class="kpi-label">Supervisión humana obligatoria que bloquea escaneos a objetivos externos.</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-icon">📶</span>
+          <span class="kpi-tag">MULTI-DISPOSITIVO</span>
+        </div>
+        <div class="kpi-value">Wi-Fi + Local</div>
+        <div class="kpi-label">Servidor en 0.0.0.0:8080 accesible desde teléfonos, tablets y laptops.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SECCIÓN 1: CONTEXTO DETALLADO DEL PROYECTO & IDEAS FUNDAMENTALES
+       =================================================================== -->
+  <section class="content-container section-anchor" id="contexto">
+    <div class="section-header">
+      <span class="section-tag">01 // VISIÓN DE INGENIERÍA</span>
+      <h2 class="section-title">Contexto del Proyecto e Ideas Fundamentales</h2>
+      <p class="section-desc">
+        ¿De dónde nace Anonymous? Comprende el origen del software, la integración armónica de 5 proyectos de código abierto y los pilares arquitectónicos que guían su diseño.
+      </p>
+    </div>
+
+    <!-- Tarjeta narrativa del contexto -->
+    <article class="context-narrative-card">
+      <div class="narrative-grid">
+        <div class="narrative-col">
+          <h3><span>🎯</span> El Origen: Fusión y No Fragmentación</h3>
+          <p>
+            En la industria de la seguridad informática contemporánea existe una profunda <b>fragmentación de herramientas</b>: los auditores deben utilizar una utilidad para escanear puertos, otra para registrar notas, navegar por internet para consultar los marcos normativos de OWASP y recurrir a scripts adicionales para redactar el informe final.
+          </p>
+          <p>
+            El proyecto <b>Anonymous</b> no nació como un script aislado, sino como la <b>fusión, orquestación y síntesis de cinco proyectos de vanguardia</b>. Se seleccionaron los mejores patrones de cada iniciativa para crear un núcleo homogéneo que actúa simultáneamente como auditor ofensivo, asesor defensivo y asistente de operaciones tácticas.
+          </p>
+          <div class="callout-box">
+            <strong>Misión Central:</strong> Ofrecer un entorno de ciberseguridad unificado que no requiera servidores en la nube obligatorios ni infraestructuras pesadas de virtualización.
+          </div>
+        </div>
+
+        <div class="narrative-col">
+          <h3><span>💡</span> La Filosofía Técnica: Rendimiento y Simbiosis</h3>
+          <p>
+            Mientras que las suites modernas de auditoría y los asistentes de inteligencia artificial exigen estaciones de trabajo de 32 o 64 GB de RAM, Anonymous se diseñó con una <b>restricción estricta de ingeniería</b>: debe ejecutarse con absoluta soltura en una laptop estándar para estudiantes o desarrolladores con <b>8 GB de RAM y procesador Ryzen 5 o Intel Core i5</b>.
+          </p>
+          <p>
+            Asimismo, introduce la <b>simbiosis Red Team + Blue Team</b>: en lugar de limitarse a indicar qué puertos o servicios están abiertos, el sistema los correlaciona en tiempo real con las contramedidas formales de <b>OWASP Top 10, MITRE ATT&CK y CIS Controls</b>, cerrando el ciclo de seguridad de forma constructiva.
+          </p>
+          <div class="callout-box">
+            <strong>Privacidad y Persistencia:</strong> Base de datos relacional local en SQLite y documentación persistente tipo LLM Wiki formateada en Markdown para Obsidian.
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Tabs interactivas: Los 5 Proyectos Integrados -->
+    <div style="margin-top: 36px;">
+      <h3 style="font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 16px; color: var(--text-bright);">
+        Los 5 Pilares de Código Abierto Ensamblados en Anonymous:
+      </h3>
+
+      <div class="pillars-tab-nav" role="tablist">
+        <button class="pillar-tab-btn active" data-target="pillar-pentestgpt" role="tab" id="tab-pentestgpt">
+          <span>⚔️</span> PentestGPT (PTT)
+        </button>
+        <button class="pillar-tab-btn" data-target="pillar-cyberrag" role="tab" id="tab-cyberrag">
+          <span>🛡️</span> Cybersecurity-RAG
+        </button>
+        <button class="pillar-tab-btn" data-target="pillar-openjarvis" role="tab" id="tab-openjarvis">
+          <span>⚙️</span> OpenJarvis
+        </button>
+        <button class="pillar-tab-btn" data-target="pillar-jarvis" role="tab" id="tab-jarvis">
+          <span>🎙️</span> Jarvis HUD
+        </button>
+        <button class="pillar-tab-btn" data-target="pillar-ecc" role="tab" id="tab-ecc">
+          <span>🦺</span> ECC AgentShield
+        </button>
+      </div>
+
+      <!-- Panel 1: PentestGPT -->
+      <div class="pillar-content-panel active" id="pillar-pentestgpt" role="tabpanel">
+        <div class="pillar-header-group">
+          <div class="pillar-title">
+            <span>⚔️</span> PentestGPT // Árbol de Tareas de Pentesting (PTT)
+          </div>
+          <span class="pillar-badge red">MOTOR OFENSIVO (RED TEAM)</span>
+        </div>
+        <div class="pillar-grid">
+          <div>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+              En lugar de disparar comandos desordenados, PentestGPT aporta la metodología del <b>Pentesting Task Tree (PTT)</b>: una estructura jerárquica de tareas dependientes que modela cómo piensa un auditor ético experimentado.
+            </p>
+            <ul class="pillar-feature-list">
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>Fases secuenciales:</b> Reconocimiento ➔ Escaneo ➔ Enumeración ➔ Análisis de Vulnerabilidad ➔ Reporte.</span>
+              </li>
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>Progresión de estado:</b> Cada tarea transita de <i>pendiente</i> a <i>en progreso</i> y <i>completada</i> tras verificar los resultados.</span>
+              </li>
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>Adaptado a Python Nativo:</b> Implementado en <code>anonymous/engines/red/ptt.py</code> sin dependencias pesadas ni llamadas a APIs bloqueantes.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="pillar-code-preview">
+# anonymous/engines/red/ptt.py
+class PTTNode:
+    def __init__(self, id, phase, title, status):
+        self.id = id
+        self.phase = phase
+        self.title = title
+        self.status = TaskStatus.PENDING
+        self.subtasks = []
+        
+# Transición automática:
+ptt_engine.complete_task("T2")  # Escaneo completado
+ptt_engine.activate_task("T3")  # Enumeración iniciada
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 2: Cybersecurity-RAG -->
+      <div class="pillar-content-panel" id="pillar-cyberrag" role="tabpanel">
+        <div class="pillar-header-group">
+          <div class="pillar-title">
+            <span>🛡️</span> Cybersecurity-RAG // Asesor Normativo
+          </div>
+          <span class="pillar-badge blue">MOTOR DEFENSIVO (BLUE TEAM)</span>
+        </div>
+        <div class="pillar-grid">
+          <div>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+              Aporta el conocimiento normativo defensivo para que la plataforma no sea un simple generador de alertas, sino un <b>asesor técnico de remediación</b> basado en los marcos internacionales más reconocidos de la industria.
+            </p>
+            <ul class="pillar-feature-list">
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>OWASP Top 10 (2021):</b> Cobertura de A01 (Control de Acceso), A02 (Criptografía), A03 (Inyección), A05 (Mala Configuración).</span>
+              </li>
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>MITRE ATT&CK:</b> Técnicas de adversarios (T1046 Network Service Discovery, T1190 Exploit Public-Facing App, T1059 Command Scripting).</span>
+              </li>
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>CIS Controls v8:</b> Medidas concretas de endurecimiento de activos y líneas base de configuración.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="pillar-code-preview">
+# anonymous/engines/blue/knowledge_base.py
+DEFENSIVE_KB = {
+    "A05:2021": {
+        "title": "Security Misconfiguration",
+        "remediation": "Cerrar puertos innecesarios, aplicar HSTS y deshabilitar métodos HTTP no utilizados.",
+        "framework": "OWASP Top 10"
+    },
+    "T1046": {
+        "title": "Network Service Discovery",
+        "mitigation": "Segmentación en VLANs y firewall perimetral."
+    }
+}
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 3: OpenJarvis -->
+      <div class="pillar-content-panel" id="pillar-openjarvis" role="tabpanel">
+        <div class="pillar-header-group">
+          <div class="pillar-title">
+            <span>⚙️</span> OpenJarvis // Orquestación Asíncrona & Sesiones
+          </div>
+          <span class="pillar-badge core">NÚCLEO ORQUESTADOR (CORE)</span>
+        </div>
+        <div class="pillar-grid">
+          <div>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+              Proporciona la arquitectura de despacho y ciclo de vida de peticiones, garantizando que el asistente conserve el estado de la sesión, los comandos ejecutados y los hallazgos en una base de datos SQLite embebida.
+            </p>
+            <ul class="pillar-feature-list">
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>Dispatcher Central:</b> Enrutamiento inteligente entre comandos directos, intenciones regex y consultas asistidas por IA.</span>
+              </li>
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>Soporte MCP (Model Context Protocol):</b> Conectividad estructurada con herramientas y sistemas de archivos.</span>
+              </li>
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>Persistencia Ligera:</b> SQLite sin servidores externos; arranca en menos de 10 milisegundos.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="pillar-code-preview">
+# anonymous/core/dispatcher.py
+def process_input(text, confirmed_by_user=False):
+    # 1. Validar con AgentShield HITL
+    # 2. Despachar a Red (escaneo) o Blue (normativa)
+    # 3. Guardar hallazgo en SQLite
+    # 4. Notificar a la interfaz
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 4: Jarvis -->
+      <div class="pillar-content-panel" id="pillar-jarvis" role="tabpanel">
+        <div class="pillar-header-group">
+          <div class="pillar-title">
+            <span>🎙️</span> Jarvis // HUD Táctico & Interacción Rápida
+          </div>
+          <span class="pillar-badge ops">INTERFAZ & RESPUESTA</span>
+        </div>
+        <div class="pillar-grid">
+          <div>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+              Inspira la estética visual futurista tipo Stark Industries HUD, la reactividad de la consola de comandos, el radar holográfico interactivo y los cimientos para dictado por voz y atajos de teclado globales.
+            </p>
+            <ul class="pillar-feature-list">
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>HUD Stark Cyberpunk:</b> Paletas intercambiables (Normal, Ataque Red Team, Defensa Blue Team, Éxito y Error).</span>
+              </li>
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>Radar Holográfico HTML5 Canvas:</b> Renderizado a 60 FPS con mapeo de nodos descubiertos en el espacio de coordenadas.</span>
+              </li>
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>Terminal Interactiva Táctica:</b> Soporte para comandos con resaltado de sintaxis y botones de acción rápida.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="pillar-code-preview">
+/* styles.css - Temas Tácticos Reactivos */
+body[data-mode="attack"] {
+  --accent: #c084fc; /* Neón Púrpura */
+  --panel-border: rgba(192, 132, 252, 0.28);
+}
+body[data-mode="defense"] {
+  --accent: #00f985; /* Verde Esmeralda */
+  --panel-border: rgba(0, 249, 133, 0.28);
+}
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 5: ECC AgentShield -->
+      <div class="pillar-content-panel" id="pillar-ecc" role="tabpanel">
+        <div class="pillar-header-group">
+          <div class="pillar-title">
+            <span>🦺</span> ECC AgentShield // Arnés de Contención Ética
+          </div>
+          <span class="pillar-badge shield">GOBERNANZA & HITL</span>
+        </div>
+        <div class="pillar-grid">
+          <div>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+              Heredado del framework ECC (.agents), AgentShield es el <b>guardián ético y de seguridad</b> del sistema. Implementa el principio inquebrantable de Human-In-The-Loop (HITL) y la gestión de presupuesto de contexto (Context Budget).
+            </p>
+            <ul class="pillar-feature-list">
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>Barrera de Contención HITL:</b> Impide que cualquier escaneo o comando a destinos no locales se ejecute sin la aprobación explícita de un humano.</span>
+              </li>
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>Presupuesto de Contexto:</b> Poda y comprime logs para no saturar tokens de modelos de lenguaje ni permitir desbordes de memoria.</span>
+              </li>
+              <li class="pillar-feature-item">
+                <span class="icon">✔</span>
+                <span><b>Cumplimiento Legal:</b> Garantiza que el software nunca actúe como un malware autónomo o botnet fuera de control.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="pillar-code-preview">
+# anonymous/guardrails/agent_shield.py
+class AgentShield:
+    def check_permission(self, target: str, confirmed: bool) -> bool:
+        if target in ("127.0.0.1", "localhost"):
+            return True # Seguro para pruebas locales
+        if not confirmed:
+            raise HITLAuthorizationRequired(
+                f"Destino no local {target} requiere confirmación humana."
+            )
+        return True
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Las 4 Ideas Clave de Diseño -->
+    <div class="philosophy-grid">
+      <div class="philosophy-card">
+        <span class="philosophy-icon">🚫🐳</span>
+        <h3 class="philosophy-title">Regla Estricta "No Docker"</h3>
+        <p class="philosophy-desc">
+          Docker Desktop en Windows 11 requiere activar WSL2 o Hyper-V, consumiendo de 3 a 5 GB de RAM solo en iniciar el subsistema Linux. Anonymous elimina Docker por completo: utiliza sockets directos de Python que consumen menos de 60 MB en memoria, permitiendo que la computadora del usuario permanezca rápida, fresca y silenciosa.
+        </p>
+      </div>
+
+      <div class="philosophy-card">
+        <span class="philosophy-icon">💻📱</span>
+        <h3 class="philosophy-title">Arquitectura Híbrida Dual</h3>
+        <p class="philosophy-desc">
+          No fuerza una elección binaria entre consola o gráficos: analistas veteranos pueden operar por CLI mediante <code>python run.py</code> con salida formateada en rich para Warp Terminal, mientras que instructores, estudiantes o clientes pueden disfrutar del HUD interactivo web en <code>python server.py --port 8080</code>.
+        </p>
+      </div>
+
+      <div class="philosophy-card">
+        <span class="philosophy-icon">📶🌐</span>
+        <h3 class="philosophy-title">Transmisión Abierta por Wi-Fi</h3>
+        <p class="philosophy-desc">
+          El servidor HTTP nativo escucha en la dirección comodín <code>0.0.0.0:8080</code>. Esto permite que el panel de control se proyecte de forma inalámbrica a smartphones, tablets u otras laptops en el aula o laboratorio sin necesidad de configuraciones complejas, cables ni routers corporativos.
+        </p>
+      </div>
+
+      <div class="philosophy-card">
+        <span class="philosophy-icon">🧠📚</span>
+        <h3 class="philosophy-title">LLM Wiki Persistente</h3>
+        <p class="philosophy-desc">
+          A diferencia de los chats de IA efímeros que olvidan el contexto al cerrar la ventana, Anonymous almacena sus hallazgos, conceptos y metodologías en una Wiki estructurada en Markdown para Obsidian, asegurando trazabilidad histórica acumulativa entre sesiones.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SECCIÓN 2: ¿QUÉ PROBLEMA RESUELVE EN EL MUNDO REAL?
+       ===================================================================== -->
+  <section class="content-container section-anchor" id="problema">
+    <div class="section-header">
+      <span class="section-tag">02 // IMPACTO Y RELEVANCIA</span>
+      <h2 class="section-title">¿Qué Problema Resuelve en el Mundo Real?</h2>
+      <p class="section-desc">
+        La ciberseguridad actual sufre de barreras de costos, fragmentación operativa y riesgos legales. Descubre cómo Anonymous resuelve cada uno de estos desafíos tangibles.
+      </p>
+    </div>
+
+    <div class="problem-solution-container">
+      <!-- Problema 1: Fragmentación -->
+      <article class="problem-solution-card">
+        <div class="problem-card-header">
+          <span class="problem-index">DESAFÍO 01</span>
+          <h3 class="problem-title-text">La Fragmentación Crónica de Herramientas de Auditoría</h3>
+        </div>
+        <div class="problem-dual-body">
+          <div class="problem-side">
+            <span class="side-label problem">EL PROBLEMA EN EL MUNDO REAL</span>
+            <p class="side-text">
+              Para auditar un sistema, un especialista suele tener abiertas 4 a 6 aplicaciones independientes: un terminal con nmap, un bloc de notas para llevar la bitácora del árbol de tareas, dos pestañas del navegador para leer documentación en OWASP y MITRE, y un generador de PDFs.
+            </p>
+            <div class="side-quote danger">
+              "El analista pasa el 40% de su tiempo copiando y pegando datos entre herramientas inconexas, perdiendo la visión integral de la intrusión."
+            </div>
+          </div>
+          <div class="solution-side">
+            <span class="side-label solution">LA SOLUCIÓN DE ANONYMOUS</span>
+            <p class="side-text">
+              Centraliza el ciclo completo en un <b>único flujo coherente</b>: el escaneo por sockets puebla automáticamente el Árbol de Tareas PTT, registra el evento en la base de datos de hallazgos, despliega la ficha de mitigación normativa en un clic y permite exportar el informe estructurado sin salir de la plataforma.
+            </p>
+            <div class="side-quote success">
+              "Flujo unificado: Un escaneo TCP alimenta el PTT, activa la correlación RAG y guarda el hallazgo con latencia en milisegundos."
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Problema 2: Barrera de Hardware -->
+      <article class="problem-solution-card">
+        <div class="problem-card-header">
+          <span class="problem-index">DESAFÍO 02</span>
+          <h3 class="problem-title-text">La Barrera Excesiva de Hardware y Costos de Infraestructura</h3>
+        </div>
+        <div class="problem-dual-body">
+          <div class="problem-side">
+            <span class="side-label problem">EL PROBLEMA EN EL MUNDO REAL</span>
+            <p class="side-text">
+              Las suites modernas de pentesting asistido por IA suelen requerir estaciones de trabajo de 32 o 64 GB de RAM, tarjetas gráficas dedicadas para modelos locales y contenedores Docker gigantescos (de 10 a 20 GB). Esto deja fuera a estudiantes universitarios, investigadores de países en desarrollo y pequeñas empresas.
+            </p>
+            <div class="side-quote danger">
+              "Equipos con 8 GB de RAM quedan congelados al intentar iniciar entornos de laboratorio basados en máquinas virtuales y Docker."
+            </div>
+          </div>
+          <div class="solution-side">
+            <span class="side-label solution">LA SOLUCIÓN DE ANONYMOUS</span>
+            <p class="side-text">
+              <b>Democratización del aprendizaje y la práctica:</b> Escáner TCP construido con sockets directos en C/Python, base de conocimiento en memoria y servidor HTTP nativo. Consume menos de 60 MB de RAM y corre con fluidez en computadoras estándar con Windows 11 o Linux.
+            </p>
+            <div class="side-quote success">
+              "100% Nativo: Funciona en laptops económicas de 8 GB sin sobrecalentar el procesador ni degradar la batería."
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Problema 3: Riesgo Ético y Falta de Contención -->
+      <article class="problem-solution-card">
+        <div class="problem-card-header">
+          <span class="problem-index">DESAFÍO 03</span>
+          <h3 class="problem-title-text">El Peligro de Daños No Intencionados y Responsabilidad Legal</h3>
+        </div>
+        <div class="problem-dual-body">
+          <div class="problem-side">
+            <span class="side-label problem">EL PROBLEMA EN EL MUNDO REAL</span>
+            <p class="side-text">
+              La integración de agentes autónomos de IA en ciberseguridad plantea un grave riesgo: un modelo desbocado o un comando mal interpretado puede atacar servidores de producción, bases de datos gubernamentales o pasarelas de pago de terceros, generando caídas de servicio y demandas penales.
+            </p>
+            <div class="side-quote danger">
+              "Una IA sin guardarraíles éticos que escanea una subred pública puede ser considerada un ciberataque bajo leyes informáticas."
+            </div>
+          </div>
+          <div class="solution-side">
+            <span class="side-label solution">LA SOLUCIÓN DE ANONYMOUS</span>
+            <p class="side-text">
+              <b>AgentShield con Human-In-The-Loop (HITL) forzado:</b> Todo intento de auditar un host que no sea localhost o la IP propia es interceptado en el núcleo antes de generar ningún paquete de red. La acción queda suspendida en el modal de confirmación hasta que el operador humano la valida.
+            </p>
+            <div class="side-quote success">
+              "Seguridad por diseño: Ni un solo paquete sale hacia redes no autorizadas sin consentimiento humano formal."
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Problema 4: La Brecha entre el Ataque y la Remediación -->
+      <article class="problem-solution-card">
+        <div class="problem-card-header">
+          <span class="problem-index">DESAFÍO 04</span>
+          <h3 class="problem-title-text">La Brecha entre el Ataque (Red) y la Remediación (Blue)</h3>
+        </div>
+        <div class="problem-dual-body">
+          <div class="problem-side">
+            <span class="side-label problem">EL PROBLEMA EN EL MUNDO REAL</span>
+            <p class="side-text">
+              Generalmente, los pentesters informan "el puerto 8080 está abierto" o "el servicio expone cabeceras inseguras", pero el equipo defensivo tarda semanas en averiguar cómo parcharlo de acuerdo con los marcos de cumplimiento requeridos por la dirección.
+            </p>
+            <div class="side-quote danger">
+              "Reportar una vulnerabilidad sin proporcionar el código de endurecimiento deja a la organización expuesta por semanas."
+            </div>
+          </div>
+          <div class="solution-side">
+            <span class="side-label solution">LA SOLUCIÓN DE ANONYMOUS</span>
+            <p class="side-text">
+              <b>Enlace simbiótico instantáneo:</b> Por cada puerto o servicio detectado, el asesor Blue Team despliega de inmediato la ficha con la causa raíz y las instrucciones de remediación concretas (OWASP A01/A05, MITRE T1046, reglas UFW/iptables y directivas CSP/HSTS).
+            </p>
+            <div class="side-quote success">
+              "De la detección al parche: Instrucciones de endurecimiento técnico entregadas en el mismo segundo del hallazgo."
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SECCIÓN 3: ¿CÓMO INTERACTÚA EL USUARIO? (FLUJO COMPLETO)
+       ===================================================================== -->
+  <section class="content-container section-anchor" id="flujo">
+    <div class="section-header">
+      <span class="section-tag">03 // EXPERIENCIA DE USUARIO</span>
+      <h2 class="section-title">¿Cómo Interactúa el Usuario con la Aplicación?</h2>
+      <p class="section-desc">
+        Recorre paso a paso el ciclo de vida completo de una interacción: desde el arranque del servidor hasta la remediación defensiva y la consolidación de reportes.
+      </p>
+    </div>
+
+    <!-- Stepper interactivo -->
+    <div class="interactive-flow-wrapper">
+      <nav class="flow-stepper-nav" id="flow-nav-container" aria-label="Navegación de pasos del flujo">
+        <!-- Renderizado dinámicamente vía presentacion.js -->
+      </nav>
+
+      <!-- Ficha interactiva del paso actual -->
+      <div class="step-display-card">
+        <div class="step-info-col">
+          <div class="step-badge-row">
+            <span class="step-phase-tag" id="step-phase-tag">PASO 01 // INICIALIZACIÓN</span>
+          </div>
+
+          <h3 class="step-title" id="step-title">1. Despliegue Nativo y Transmisión Wi-Fi</h3>
+          <p class="step-description" id="step-desc">
+            El operador inicia el sistema con un solo comando en terminal o haciendo doble clic en start_server.bat. El servidor HTTP nativo en Python enlaza en 0.0.0.0:8080 sin necesidad de levantar pesados contenedores Docker ni subsistemas WSL2.
+          </p>
+
+          <div class="step-highlight-box">
+            <div style="font-weight: 700; color: var(--accent); margin-bottom: 6px; font-family: var(--font-heading);">
+              PUNTOS CLAVE DEL PASO:
+            </div>
+            <ul id="step-highlights" style="padding-left: 18px; display: flex; flex-direction: column; gap: 4px;">
+              <!-- Cargado dinámicamente -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Previsualización / Mockup interactivo -->
+        <div class="step-mockup-col">
+          <div class="mockup-titlebar">
+            <div class="mockup-dots">
+              <span class="mockup-dot red"></span>
+              <span class="mockup-dot yellow"></span>
+              <span class="mockup-dot green"></span>
+            </div>
+            <span id="step-mockup-title" style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">
+              BOOT LOG // SERVER DAEMON
+            </span>
+            <span style="font-family: var(--font-mono); font-size: 10px; color: var(--accent);">LIVE HUD</span>
+          </div>
+          <div class="mockup-screen-body" id="step-mockup-body">
+            <!-- Cargado dinámicamente -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Controles de navegación del stepper -->
+      <div class="step-nav-controls">
+        <button class="btn-step-prev" id="btn-step-prev" onclick="prevStep()">
+          &#8592; Paso Anterior
+        </button>
+        <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);">
+          Usa los botones o haz clic en los números arriba
+        </span>
+        <button class="btn-step-next primary" id="btn-step-next" onclick="nextStep()">
+          Siguiente Paso &#8594;
+        </button>
+      </div>
+
+      <!-- Diagrama de carriles de actores -->
+      <div class="sequence-flow-diagram">
+        <h4><span>🔄</span> Mapa de Comunicación entre Componentes</h4>
+        <div class="diagram-lanes">
+          <div class="diagram-lane">
+            <div class="lane-actor">1. Operador</div>
+            <div class="lane-desc">Define host, puertos o consulta normativa desde PC o Smartphone.</div>
+          </div>
+          <div class="diagram-lane">
+            <div class="lane-actor">2. Servidor Python</div>
+            <div class="lane-desc">API HTTP nativa en 0.0.0.0:8080 que enruta las peticiones JSON.</div>
+          </div>
+          <div class="diagram-lane">
+            <div class="lane-actor">3. AgentShield</div>
+            <div class="lane-desc">Verifica autorización HITL si el destino no es local.</div>
+          </div>
+          <div class="diagram-lane">
+            <div class="lane-actor">4. Motor Sockets</div>
+            <div class="lane-desc">Escaneo concurrente multihilo de puertos TCP en &lt; 0.5s.</div>
+          </div>
+          <div class="diagram-lane">
+            <div class="lane-actor">5. Árbol PTT</div>
+            <div class="lane-desc">Actualiza el estado metodológico de tareas de pentest.</div>
+          </div>
+          <div class="diagram-lane">
+            <div class="lane-actor">6. Blue Team RAG</div>
+            <div class="lane-desc">Coteja con OWASP, MITRE y CIS y entrega guías de endurecimiento.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SECCIÓN 4: SIMULADOR DE FLUJO EN VIVO (PLAYGROUND)
+       ===================================================================== -->
+  <section class="content-container section-anchor" id="simulador">
+    <div class="section-header">
+      <span class="section-tag">04 // INTERACCIÓN EN TIEMPO REAL</span>
+      <h2 class="section-title">Simulador de Flujo en Vivo (Playground)</h2>
+      <p class="section-desc">
+        Experimenta cómo responde la plataforma. Modifica la IP de destino, selecciona los puertos y observa cómo opera la barrera AgentShield HITL y la resolución de puertos con asesoría defensiva.
+      </p>
+    </div>
+
+    <div class="live-playground-card">
+      <div class="playground-grid">
+        <!-- Panel de control del simulador -->
+        <div>
+          <h3 style="font-family: var(--font-heading); font-size: 1.2rem; color: var(--text-bright); margin-bottom: 16px;">
+            Configuración del Flujo Simulado:
+          </h3>
+
+          <div class="control-group">
+            <label class="control-label" for="sim-target-input">IP / Host Objetivo:</label>
+            <input type="text" id="sim-target-input" class="control-input" value="127.0.0.1" placeholder="Ej. 127.0.0.1 o 192.168.1.100">
+            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">
+              Tip: Escribe una IP no local como <code>192.168.1.50</code> para disparar la advertencia HITL.
+            </span>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">Puertos TCP a Auditar:</label>
+            <div class="ports-selector-row">
+              <span class="sim-port-chip selected" data-port="21">21 (FTP)</span>
+              <span class="sim-port-chip selected" data-port="22">22 (SSH)</span>
+              <span class="sim-port-chip selected" data-port="80">80 (HTTP)</span>
+              <span class="sim-port-chip selected" data-port="443">443 (HTTPS)</span>
+              <span class="sim-port-chip selected" data-port="3306">3306 (MySQL)</span>
+              <span class="sim-port-chip selected" data-port="8080">8080 (Web)</span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 24px;">
+            <button class="btn-primary" onclick="runSimulator()" id="btn-run-sim" style="padding: 10px 18px; font-size: 0.88rem;">
+              <span>⚡</span> EJECUTAR FLUJO COMPLETO
+            </button>
+            <button class="btn-secondary" onclick="resetSimulator()" style="padding: 10px 16px; font-size: 0.88rem;">
+              <span>🧹</span> LIMPIAR
+            </button>
+          </div>
+        </div>
+
+        <!-- Terminal de salida del simulador -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);">
+              TELEMETRÍA EN TIEMPO REAL:
+            </span>
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--status-ok);">
+              ● SIMULATOR READY
+            </span>
+          </div>
+          <div class="sim-screen" id="sim-screen">
+            <div style="color: #8ca4b0;">
+              Simulador en reposo. Define la IP objetivo, selecciona puertos y presiona 'EJECUTAR FLUJO COMPLETO'.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SECCIÓN 5: TABLA COMPARATIVA DE ARQUITECTURA
+       ===================================================================== -->
+  <section class="content-container section-anchor" id="comparativa">
+    <div class="section-header">
+      <span class="section-tag">05 // EFICIENCIA TÉCNICA</span>
+      <h2 class="section-title">Matriz Comparativa de Arquitectura</h2>
+      <p class="section-desc">
+        ¿Por qué Anonymous supera a los enfoques tradicionales de pentesting basados en contenedores o herramientas aisladas?
+      </p>
+    </div>
+
+    <div class="comparison-table-wrapper">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Criterio Técnico</th>
+            <th>Anonymous (Híbrido Nativo)</th>
+            <th>Entornos Docker / WSL2</th>
+            <th>Kali Linux en VirtualBox</th>
+            <th>Scripts Aislados (Nmap/CLI)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Consumo de RAM en Reposo</b></td>
+            <td><span class="badge-yes">✔ &lt; 60 MB</span></td>
+            <td><span class="badge-no">✘ 3.5 a 4.5 GB</span></td>
+            <td><span class="badge-no">✘ 4.0 a 8.0 GB</span></td>
+            <td><span class="badge-yes">✔ ~40 MB</span></td>
+          </tr>
+          <tr>
+            <td><b>Dependencia de Virtualización</b></td>
+            <td><span class="badge-yes">✔ Ninguna (Python Nativo)</span></td>
+            <td><span class="badge-no">✘ Hyper-V / WSL2 forzado</span></td>
+            <td><span class="badge-no">✘ Hipervisor tipo 2 obligatorio</span></td>
+            <td><span class="badge-yes">✔ Ninguna</span></td>
+          </tr>
+          <tr>
+            <td><b>Tiempo de Inicialización</b></td>
+            <td><span class="badge-yes">✔ &lt; 1 segundo</span></td>
+            <td><span class="badge-no">✘ 20 a 45 segundos</span></td>
+            <td><span class="badge-no">✘ 45 a 90 segundos</span></td>
+            <td><span class="badge-yes">✔ Inmediato</span></td>
+          </tr>
+          <tr>
+            <td><b>Supervisión Ética (HITL)</b></td>
+            <td><span class="badge-yes">✔ AgentShield integrado</span></td>
+            <td><span class="badge-no">✘ Sin guardarraíles</span></td>
+            <td><span class="badge-no">✘ Sin guardarraíles</span></td>
+            <td><span class="badge-no">✘ Sin guardarraíles</span></td>
+          </tr>
+          <tr>
+            <td><b>Metodología Árbol PTT</b></td>
+            <td><span class="badge-yes">✔ Jerárquica y en tiempo real</span></td>
+            <td><span class="badge-no">✘ Bitácoras manuales</span></td>
+            <td><span class="badge-no">✘ CherryTree manual</span></td>
+            <td><span class="badge-no">✘ No integrada</span></td>
+          </tr>
+          <tr>
+            <td><b>Asesoría Defensiva (Blue Team)</b></td>
+            <td><span class="badge-yes">✔ OWASP / MITRE / CIS en 1 clic</span></td>
+            <td><span class="badge-no">✘ Solo ofensivo</span></td>
+            <td><span class="badge-no">✘ Solo ofensivo</span></td>
+            <td><span class="badge-no">✘ Requiere búsqueda web</span></td>
+          </tr>
+          <tr>
+            <td><b>Transmisión Wi-Fi Móvil</b></td>
+            <td><span class="badge-yes">✔ Nativa en 0.0.0.0:8080</span></td>
+            <td><span class="badge-no">✘ Port forwarding complejo</span></td>
+            <td><span class="badge-no">✘ Adaptador de red puente</span></td>
+            <td><span class="badge-no">✘ Solo consola local</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SECCIÓN 6: PREGUNTAS FRECUENTES / GUÍA DE DEFENSA TÉCNICA (FAQ)
+       ===================================================================== -->
+  <section class="content-container section-anchor" id="faq">
+    <div class="section-header">
+      <span class="section-tag">06 // DEFENSA TÉCNICA</span>
+      <h2 class="section-title">Preguntas Frecuentes y Justificación</h2>
+      <p class="section-desc">
+        Respuestas preparadas para tribunales evaluadores, auditores técnicos y desarrolladores interesados en la plataforma.
+      </p>
+    </div>
+
+    <div class="faq-grid">
+      <div class="faq-card open">
+        <button class="faq-question-btn">
+          <span>¿Por qué implementaron un escáner de sockets nativo en lugar de llamar a Nmap?</span>
+          <span class="faq-icon">&#9660;</span>
+        </button>
+        <div class="faq-answer">
+          Para garantizar <b>portabilidad absoluta y cero dependencias externas</b>. En Windows, Nmap requiere la instalación previa de controladores de bajo nivel como Npcap (que exige permisos de Administrador y reinicio del sistema). El escáner de sockets TCP de Anonymous funciona inmediatamente con la biblioteca estándar de Python tanto en Windows 11 como en Linux sin permisos especiales ni instalaciones suplementarias.
+        </div>
+      </div>
+
+      <div class="faq-card">
+        <button class="faq-question-btn">
+          <span>¿Cómo se garantiza que el sistema no realice ataques no autorizados si usa IA?</span>
+          <span class="faq-icon">&#9660;</span>
+        </button>
+        <div class="faq-answer">
+          A través del arnés <b>AgentShield con política Human-In-The-Loop (HITL)</b>. La arquitectura no le otorga autonomía ciega al modelo de lenguaje: los comandos pasan por un validador de intenciones determinista. Si la dirección de destino no coincide con <code>127.0.0.1</code> o <code>localhost</code>, el sistema bloquea el despacho y exige que el operador humano haga clic en autorizar.
+        </div>
+      </div>
+
+      <div class="faq-card">
+        <button class="faq-question-btn">
+          <span>¿Cómo funciona el acceso por Wi-Fi sin routers corporativos ni nube?</span>
+          <span class="faq-icon">&#9660;</span>
+        </button>
+        <div class="faq-answer">
+          El servidor HTTP nativo en Python enlaza en <code>0.0.0.0</code> (la dirección IP comodín). Al iniciar, el script inspecciona las interfaces de red para encontrar la IP asignada por la red Wi-Fi local (por ejemplo, <code>10.0.5.49</code>). Cualquier dispositivo conectado a esa misma red Wi-Fi puede acceder instantáneamente a <code>http://10.0.5.49:8080</code> sin cables ni servidores en la nube.
+        </div>
+      </div>
+
+      <div class="faq-card">
+        <button class="faq-question-btn">
+          <span>¿La base de normativas defensivas requiere conexión a internet para funcionar?</span>
+          <span class="faq-icon">&#9660;</span>
+        </button>
+        <div class="faq-answer">
+          No. La base de conocimiento defensiva de <b>OWASP Top 10, MITRE ATT&CK y CIS Controls v8</b> está embebida en memoria y estructurada en diccionarios y SQLite. Funciona 100% offline. La conexión a internet únicamente se utiliza de forma opcional si el usuario decide configurar una API Key de Google Gemini Flash en su archivo <code>.env</code> para consultas de razonamiento avanzado.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       FOOTER & LLAMADA A LA ACCIÓN FINAL
+       ===================================================================== -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 24px;">⚡</span>
+        <span style="font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; color: #fff;">
+          ANONYMOUS HYBRID PLATFORM
+        </span>
+      </div>
+
+      <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 650px;">
+        Desarrollado para transformar la auditoría de ciberseguridad y la asistencia táctica en entornos de hardware realistas. Fusión de PentestGPT, Cybersecurity-RAG, OpenJarvis, Jarvis y ECC AgentShield.
+      </p>
+
+      <div class="footer-links">
+        <a href="index.html" class="footer-link">💻 Centro de Control HUD</a>
+        <a href="#top-header" class="footer-link">⬆ Volver al Inicio</a>
+        <a href="#contexto" class="footer-link">📖 Contexto del Proyecto</a>
+        <a href="#problema" class="footer-link">🎯 Problema Real</a>
+        <a href="#flujo" class="footer-link">🧭 Flujo Interactivo</a>
+      </div>
+
+      <div class="footer-copy">
+        ANONYMOUS KERNEL V1.0-HYBRID // 2026 // OPTIMIZADO PARA AMD RYZEN 5 & 8 GB RAM // NO-DOCKER
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script interactivo -->
+  <script src="presentacion.js"></script>
+</body>
+</html>
