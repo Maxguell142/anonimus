@@ -14,6 +14,11 @@ class RiskLevel:
     CRITICAL = "CRITICAL"
 
 
+def is_local_target(target: str) -> bool:
+    host = (target or "").strip().lower()
+    return host in ("127.0.0.1", "localhost", "0.0.0.0", "::1")
+
+
 class AgentShield:
     """Security filter to prevent dangerous or unintended command execution."""
 
@@ -55,12 +60,21 @@ class AgentShield:
         """Evaluates structured internal actions (e.g. port_scan, exploit_check)."""
         if action_type == "port_scan":
             target = details.get("target", "localhost")
-            is_local = target in ("127.0.0.1", "localhost", "0.0.0.0")
+            local = is_local_target(target)
             return {
                 "allowed": True,
-                "risk_level": RiskLevel.LOW if is_local else RiskLevel.MEDIUM,
-                "requires_confirmation": not is_local,
+                "risk_level": RiskLevel.LOW if local else RiskLevel.MEDIUM,
+                "requires_confirmation": not local,
                 "reason": f"Escaneo de puertos en objetivo: {target}",
+            }
+        if action_type == "host_ping":
+            target = details.get("target", "localhost")
+            local = is_local_target(target)
+            return {
+                "allowed": True,
+                "risk_level": RiskLevel.LOW if local else RiskLevel.MEDIUM,
+                "requires_confirmation": not local,
+                "reason": f"Ping ICMP hacia: {target}",
             }
         elif action_type == "exploit_verify":
             return {

@@ -15,6 +15,7 @@ class BriefingEngine:
     def get_briefing(self) -> Dict[str, Any]:
         sys_info = os_adapter.get_system_info()
         findings = session_manager.get_findings(limit=5)
+        findings_count = session_manager.count_findings()
         tasks = ptt_engine.get_all_tasks()
 
         completed_tasks = [t for t in tasks if t.get("status") == "completed"]
@@ -25,12 +26,12 @@ class BriefingEngine:
             f"• Sistema: {sys_info['os']} ({sys_info['sys_platform']}) en {sys_info['hostname']}\n"
             f"• IP Local: {sys_info['local_ip']}\n"
             f"• Tareas PTT: {len(completed_tasks)}/{len(tasks)} completadas ({len(in_progress_tasks)} en progreso)\n"
-            f"• Hallazgos registrados: {len(findings)} eventos de seguridad guardados."
+            f"• Hallazgos registrados: {findings_count} eventos de seguridad guardados."
         )
 
         return {
             "system_info": sys_info,
-            "findings_count": len(findings),
+            "findings_count": findings_count,
             "recent_findings": findings,
             "tasks_summary": {
                 "total": len(tasks),

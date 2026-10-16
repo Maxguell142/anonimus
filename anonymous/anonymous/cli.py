@@ -125,6 +125,8 @@ def main():
             t = res.get("type")
             if t == "scan":
                 display_scan_results(res["data"])
+                if res.get("advice"):
+                    console.print(Panel(res["advice"], title="🛡️ Asesoría Blue Team", border_style="green"))
             elif t == "ptt":
                 display_ptt_tree(res["tasks"])
             elif t == "findings":

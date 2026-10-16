@@ -5,6 +5,8 @@ Uses SQLite to store conversations, discovered findings, and PTT states.
 
 import sqlite3
 import json
+import uuid
+from contextlib import closing
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from anonymous.config import DB_PATH
@@ -15,6 +17,7 @@ class SessionManager:
 
     def __init__(self, db_path=DB_PATH):
         self.db_path = db_path
+        self.session_id = str(uuid.uuid4())
         self._init_db()
 
     def _get_connection(self):
@@ -23,17 +26,27 @@ class SessionManager:
         return conn
 
     def _init_db(self):
-        with self._get_connection() as conn:
+        with closing(self._get_connection()) as conn:
             cursor = conn.cursor()
             # Chat messages table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS messages (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    session_id TEXT NOT NULL,
                     role TEXT NOT NULL,
                     content TEXT NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+            columns = {
+                row["name"] for row in cursor.execute("PRAGMA table_info(messages)")
+            }
+            if "session_id" not in columns:
+                cursor.execute("ALTER TABLE messages ADD COLUMN session_id TEXT")
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_messages_session_id_id "
+                "ON messages (session_id, id)"
+            )
             # Discovered findings (ports, vulns, compliance notes)
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS findings (
@@ -60,32 +73,38 @@ class SessionManager:
             conn.commit()
 
     def save_message(self, role: str, content: str):
-        with self._get_connection() as conn:
+        with closing(self._get_connection()) as conn:
             conn.execute(
-                "INSERT INTO messages (role, content) VALUES (?, ?)",
-                (role, content),
+                "INSERT INTO messages (session_id, role, content) VALUES (?, ?, ?)",
+                (self.session_id, role, content),
             )
             conn.commit()
 
     def get_recent_messages(self, limit: int = 15) -> List[Dict[str, Any]]:
-        with self._get_connection() as conn:
+        with closing(self._get_connection()) as conn:
             cursor = conn.execute(
-                "SELECT role, content, created_at FROM messages ORDER BY id DESC LIMIT ?",
-                (limit,),
+                "SELECT role, content, created_at FROM messages "
+                "WHERE session_id = ? ORDER BY id DESC LIMIT ?",
+                (self.session_id, limit),
             )
             rows = cursor.fetchall()
             return [dict(r) for r in reversed(rows)]
 
     def record_finding(self, target: str, category: str, title: str, details: str = "", severity: str = "INFO"):
-        with self._get_connection() as conn:
+        with closing(self._get_connection()) as conn:
             conn.execute(
                 "INSERT INTO findings (target, category, title, details, severity) VALUES (?, ?, ?, ?, ?)",
                 (target, category, title, details, severity),
             )
             conn.commit()
 
+    def count_findings(self) -> int:
+        with closing(self._get_connection()) as conn:
+            row = conn.execute("SELECT COUNT(*) AS n FROM findings").fetchone()
+            return int(row["n"] if row else 0)
+
     def get_findings(self, limit: int = 20) -> List[Dict[str, Any]]:
-        with self._get_connection() as conn:
+        with closing(self._get_connection()) as conn:
             cursor = conn.execute(
                 "SELECT target, category, title, details, severity, created_at FROM findings ORDER BY id DESC LIMIT ?",
                 (limit,),
@@ -93,7 +112,7 @@ class SessionManager:
             return [dict(r) for r in cursor.fetchall()]
 
     def update_task(self, task_id: str, phase: str, name: str, status: str, details: str = ""):
-        with self._get_connection() as conn:
+        with closing(self._get_connection()) as conn:
             conn.execute(
                 """
                 INSERT INTO ptt_tasks (id, phase, name, status, details, updated_at)
@@ -110,7 +129,7 @@ class SessionManager:
             conn.commit()
 
     def get_ptt_tasks(self) -> List[Dict[str, Any]]:
-        with self._get_connection() as conn:
+        with closing(self._get_connection()) as conn:
             cursor = conn.execute(
                 "SELECT id, phase, name, status, details, updated_at FROM ptt_tasks ORDER BY phase, id"
             )

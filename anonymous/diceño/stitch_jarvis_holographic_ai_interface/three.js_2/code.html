@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_29 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_29" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_29');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  // Three.js Holographic Brain & Neural Core Visualizer
+const width = container.clientWidth || window.innerWidth || 800;
+const height = container.clientHeight || 520;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+camera.position.z = 21;
+
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+renderer.setSize(width, height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+container.appendChild(renderer.domElement);
+
+const brainGroup = new THREE.Group();
+scene.add(brainGroup);
+
+const particleCount = 2400;
+const geometry = new THREE.BufferGeometry();
+const positions = new Float32Array(particleCount * 3);
+const basePositions = new Float32Array(particleCount * 3);
+const colors = new Float32Array(particleCount * 3);
+
+const pColor = new THREE.Color(0x00f0ff);
+const pColorDim = new THREE.Color(0x0088ff);
+
+// Dual-hemisphere anatomical brain formulation
+for (let i = 0; i < particleCount; i++) {
+  const side = i % 2 === 0 ? 1 : -1;
+  const u = Math.random();
+  const v = Math.random();
+  const theta = u * 2.0 * Math.PI;
+  const phi = Math.acos(2.0 * v - 1.0);
+
+  const r = 5.6 * Math.cbrt(Math.random());
+  let x = r * Math.sin(phi) * Math.cos(theta);
+  let y = r * Math.sin(phi) * Math.sin(theta) * 0.85;
+  let z = r * Math.cos(phi) * 1.25;
+
+  // Cerebral fissure separation & anatomical shaping
+  x = (Math.abs(x) * 0.85 + 1.05) * side;
+  if (z > 0) y *= 0.95;
+  if (z < -1.6) y += 0.65;
+
+  positions[i * 3] = x;
+  positions[i * 3 + 1] = y;
+  positions[i * 3 + 2] = z;
+
+  basePositions[i * 3] = x;
+  basePositions[i * 3 + 1] = y;
+  basePositions[i * 3 + 2] = z;
+
+  const mixedColor = pColor.clone().lerp(pColorDim, Math.random() * 0.5);
+  colors[i * 3] = mixedColor.r;
+  colors[i * 3 + 1] = mixedColor.g;
+  colors[i * 3 + 2] = mixedColor.b;
+}
+
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+// Particle Texture with high-luminosity center
+const pCanvas = document.createElement('canvas');
+pCanvas.width = 64;
+pCanvas.height = 64;
+const pCtx = pCanvas.getContext('2d');
+const grad = pCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+grad.addColorStop(0, 'rgba(255,255,255,1)');
+grad.addColorStop(0.25, 'rgba(0,240,255,0.9)');
+grad.addColorStop(0.65, 'rgba(0,136,255,0.3)');
+grad.addColorStop(1, 'rgba(0,0,0,0)');
+pCtx.fillStyle = grad;
+pCtx.fillRect(0, 0, 64, 64);
+const pTexture = new THREE.CanvasTexture(pCanvas);
+
+const pMaterial = new THREE.PointsMaterial({
+  color: 0x00f0ff,
+  size: 0.7,
+  map: pTexture,
+  transparent: true,
+  vertexColors: false,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
+});
+
+const particleMesh = new THREE.Points(geometry, pMaterial);
+brainGroup.add(particleMesh);
+
+// Synaptic Connecting Lines
+const lineMaterial = new THREE.LineBasicMaterial({
+  color: 0x00a8ff,
+  transparent: true,
+  opacity: 0.35,
+  blending: THREE.AdditiveBlending
+});
+
+const linePositions = [];
+for (let i = 0; i < particleCount; i += 5) {
+  for (let j = i + 1; j < Math.min(i + 15, particleCount); j += 2) {
+    const dx = positions[i * 3] - positions[j * 3];
+    const dy = positions[i * 3 + 1] - positions[j * 3 + 1];
+    const dz = positions[i * 3 + 2] - positions[j * 3 + 2];
+    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    if (dist < 2.5) {
+      linePositions.push(
+        positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2],
+        positions[j * 3], positions[j * 3 + 1], positions[j * 3 + 2]
+      );
+    }
+  }
+}
+const lineGeometry = new THREE.BufferGeometry();
+lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+const neuralLines = new THREE.LineSegments(lineGeometry, lineMaterial);
+brainGroup.add(neuralLines);
+
+// Holographic Gyroscope Orbit Rings
+const ringGroup = new THREE.Group();
+scene.add(ringGroup);
+
+function createOrbitRing(r, tube, rx, ry, col) {
+  const geo = new THREE.TorusGeometry(r, tube, 6, 90);
+  const mat = new THREE.MeshBasicMaterial({
+    color: col,
+    transparent: true,
+    opacity: 0.5,
+    wireframe: true,
+    blending: THREE.AdditiveBlending
+  });
+  const m = new THREE.Mesh(geo, mat);
+  m.rotation.x = rx;
+  m.rotation.y = ry;
+  ringGroup.add(m);
+  return m;
+}
+
+const ring1 = createOrbitRing(9.6, 0.06, Math.PI / 2.3, 0.25, 0x00f0ff);
+const ring2 = createOrbitRing(11.2, 0.05, -Math.PI / 3.2, 0.4, 0x0077ff);
+const ring3 = createOrbitRing(8.2, 0.05, 0.9, -0.6, 0x00d2ff);
+
+// Central Quantum Core Sphere
+const coreGeo = new THREE.SphereGeometry(1.6, 24, 24);
+const coreMat = new THREE.MeshBasicMaterial({
+  color: 0x80ffff,
+  wireframe: true,
+  transparent: true,
+  opacity: 0.9,
+  blending: THREE.AdditiveBlending
+});
+const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+scene.add(coreMesh);
+
+// Defense Hex/Icosahedron Shield (Dynamic)
+const shieldGeo = new THREE.IcosahedronGeometry(7.6, 2);
+const shieldMat = new THREE.MeshBasicMaterial({
+  color: 0xff0044,
+  wireframe: true,
+  transparent: true,
+  opacity: 0.0,
+  blending: THREE.AdditiveBlending
+});
+const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
+scene.add(shieldMesh);
+
+// Global control hook for HUD mode switching
+window.jarvisSystem = window.jarvisSystem || {};
+window.jarvisSystem.currentMode = 'normal';
+window.jarvisSystem.colorConfigs = {
+  normal: { primary: 0x00f0ff, secondary: 0x0077ff, core: 0x80ffff, speed: 1.0, pulse: 1.0, shield: false },
+  attack: { primary: 0xc800ff, secondary: 0x8200ff, core: 0xff00ea, speed: 2.6, pulse: 2.8, shield: false },
+  defense: { primary: 0x9d00ff, secondary: 0xff0044, core: 0xff1744, speed: 1.5, pulse: 1.7, shield: true },
+  completed: { primary: 0x00ff88, secondary: 0x00cc66, core: 0x7affc8, speed: 1.2, pulse: 1.3, shield: false },
+  error: { primary: 0xff0038, secondary: 0xb3001e, core: 0xff4d6d, speed: 0.8, pulse: 3.2, shield: false }
+};
+
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  const modeKey = (window.jarvisSystem && window.jarvisSystem.currentMode) || 'normal';
+  const cfg = (window.jarvisSystem.colorConfigs && window.jarvisSystem.colorConfigs[modeKey]) || window.jarvisSystem.colorConfigs.normal;
+
+  // Smooth lerp color
+  pMaterial.color.lerp(new THREE.Color(cfg.primary), 0.07);
+  lineMaterial.color.lerp(new THREE.Color(cfg.secondary), 0.07);
+  ring1.material.color.lerp(new THREE.Color(cfg.primary), 0.07);
+  ring2.material.color.lerp(new THREE.Color(cfg.secondary), 0.07);
+  ring3.material.color.lerp(new THREE.Color(cfg.primary), 0.07);
+  coreMat.color.lerp(new THREE.Color(cfg.core), 0.07);
+
+  const targetShieldOpacity = cfg.shield ? 0.42 : 0.0;
+  shieldMat.opacity += (targetShieldOpacity - shieldMat.opacity) * 0.08;
+  shieldMat.color.lerp(new THREE.Color(cfg.secondary), 0.08);
+
+  // Rotation
+  const spd = cfg.speed;
+  brainGroup.rotation.y = t * 0.25 * spd;
+  brainGroup.rotation.x = Math.sin(t * 0.4) * 0.12;
+
+  ring1.rotation.z += 0.008 * spd;
+  ring2.rotation.y += 0.006 * spd;
+  ring3.rotation.x -= 0.009 * spd;
+
+  shieldMesh.rotation.y -= 0.01 * spd;
+  shieldMesh.rotation.x += 0.006 * spd;
+
+  // Quantum core pulse
+  const pulseScale = 1.0 + Math.sin(t * 3.8 * cfg.pulse) * 0.24;
+  coreMesh.scale.set(pulseScale, pulseScale, pulseScale);
+
+  // Neural breathing wave across particles
+  const posArr = geometry.attributes.position.array;
+  for (let i = 0; i < particleCount; i++) {
+    const bx = basePositions[i * 3];
+    const by = basePositions[i * 3 + 1];
+    const bz = basePositions[i * 3 + 2];
+    const wave = Math.sin(t * 3.6 * spd + by * 0.75 + bz * 0.45) * 0.14;
+    posArr[i * 3] = bx * (1.0 + wave);
+    posArr[i * 3 + 1] = by * (1.0 + wave);
+    posArr[i * 3 + 2] = bz * (1.0 + wave);
+  }
+  geometry.attributes.position.needsUpdate = true;
+
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  const w = container.clientWidth || window.innerWidth || 800;
+  const h = container.clientHeight || 520;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_29 -->
+</body>
+</html>

@@ -5,7 +5,7 @@ Performs native Python socket scans without external binary dependencies.
 
 import socket
 import concurrent.futures
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Optional
 from anonymous.core.os_adapter import os_adapter
 from anonymous.core.session import session_manager
 from anonymous.engines.red.ptt import ptt_engine, TaskStatus

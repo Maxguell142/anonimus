@@ -4,7 +4,7 @@ Launcher for Anonymous (Cybersecurity Hybrid Assistant).
 
 Usage:
     python run.py          # Lanza la interfaz interactiva en Terminal (CLI)
-    python run.py --gui    # Lanza el panel de control web en el navegador (GUI)
+    python run.py --gui    # Lanza la interfaz gráfica de escritorio
 """
 
 import sys
@@ -22,22 +22,17 @@ def main():
         description="Anonymous - Plataforma Híbrida de Ciberseguridad"
     )
     parser.add_argument(
-        "--gui", "-g",
+        "--gui", "--desktop", "-g",
+        dest="desktop",
         action="store_true",
-        help="Iniciar en modo interfaz gráfica web (dashboard en navegador)",
-    )
-    parser.add_argument(
-        "--port", "-p",
-        type=int,
-        default=7860,
-        help="Puerto para la interfaz web (por defecto: 7860)",
+        help="Iniciar la interfaz gráfica de escritorio (Tkinter)",
     )
 
     args = parser.parse_args()
 
-    if args.gui:
-        from anonymous.server import run_server
-        run_server(port=args.port, open_browser=True)
+    if args.desktop:
+        from anonymous.desktop import run_desktop
+        run_desktop()
     else:
         from anonymous.cli import main as cli_main
         cli_main()

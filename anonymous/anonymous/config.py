@@ -29,6 +29,8 @@ DB_PATH = USER_DATA_DIR / "anonymous.db"
 # API Settings
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+GEMINI_FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.6-flash")
+GEMINI_TIMEOUT = int(os.getenv("GEMINI_TIMEOUT", "20"))
 
 # Server / GUI Settings
 SERVER_HOST = os.getenv("ANONYMOUS_HOST", "127.0.0.1")

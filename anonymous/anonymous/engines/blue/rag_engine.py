@@ -4,6 +4,7 @@ Retrieves relevant security framework controls and hardening recommendations.
 """
 
 from typing import List, Dict, Any
+import unicodedata
 from anonymous.engines.blue.knowledge_base import KNOWLEDGE_ENTRIES
 
 
@@ -15,17 +16,20 @@ class RAGEngine:
 
     def search(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
         """Finds top-k matching security guidelines based on query terms."""
-        query_terms = set(query.lower().replace(",", " ").replace(".", " ").split())
+        query_terms = set(self._normalize(query).replace(",", " ").replace(".", " ").split())
         scored = []
 
         for item in self.entries:
             score = 0
-            text_blob = f"{item['title']} {item['description']} {' '.join(item['keywords'])}".lower()
+            keywords = [self._normalize(keyword) for keyword in item["keywords"]]
+            text_blob = self._normalize(
+                f"{item['title']} {item['description']} {' '.join(item['keywords'])}"
+            )
 
             for term in query_terms:
                 if len(term) < 3:
                     continue
-                if term in item["keywords"]:
+                if term in keywords:
                     score += 3
                 elif term in text_blob:
                     score += 1
@@ -34,12 +38,12 @@ class RAGEngine:
                 scored.append((score, item))
 
         scored.sort(key=lambda x: x[0], reverse=True)
-
-        if not scored:
-            # Fallback to general baseline
-            return self.entries[:top_k]
-
         return [item for _, item in scored[:top_k]]
+
+    @staticmethod
+    def _normalize(text: str) -> str:
+        decomposed = unicodedata.normalize("NFKD", text.lower())
+        return "".join(char for char in decomposed if not unicodedata.combining(char))
 
     def query_with_advice(self, query: str) -> str:
         """Generates a structured advice report for a query."""

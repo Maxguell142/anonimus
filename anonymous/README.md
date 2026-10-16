@@ -2,8 +2,8 @@
 
 Asistente híbrido unificado de ciberseguridad que fusiona:
 - **PentestGPT**: Lógica de auditoría ofensiva y Árbol de Tareas de Pentesting (PTT).
-- **Cybersecurity RAG Assistant**: Asesor defensivo sobre normativas OWASP Top 10, MITRE ATT&CK y CIS Controls.
-- **OpenJarvis / Jarvis**: Orquestador central de tareas, resumen operativo diario e interacción por voz.
+- **Asesor defensivo local**: búsqueda en referencias OWASP Top 10, MITRE ATT&CK, CIS Controls v8 y NIST CSF 2.0.
+- **Centro de control Anonymous**: monitoreo local del equipo, registro de eventos y comandos desde una interfaz de escritorio.
 - **ECC AgentShield**: Arnés de validación de comandos y Human-In-The-Loop para máxima seguridad.
 
 ---
@@ -21,11 +21,15 @@ python -m pip install -r requirements.txt
 python run.py
 ```
 
-### 2. Modo Panel Gráfico Web (GUI):
+### 2. Modo gráfico de escritorio (HUD nativo):
 ```bash
 python run.py --gui
 ```
-Abre automáticamente tu navegador en `http://127.0.0.1:7860` con chat, monitoreo visual de PTT, escáner rápido y asesor RAG.
+Abre un centro de control de escritorio con métricas reales de CPU, memoria, disco y tráfico de red, un flujo Matrix, gráficos animados tipo pipes, registro de eventos, hallazgos y comandos. No muestra el reactor, objetivos ficticios ni contramedidas decorativas.
+
+Los paneles se pueden arrastrar desde su encabezado, cambiar de tamaño desde la esquina inferior derecha y ocultar o volver a mostrar desde `PANELES`. La posición, el tamaño y la visibilidad se guardan en `~/.anonymous/desktop_layout.json`; `RESTABLECER DISTRIBUCIÓN` recupera la disposición inicial. Los botones `NORMAL`, `ATAQUE`, `DEFENSA`, `ÉXITO` y `ERROR` cambian los colores y el estado de la interfaz.
+
+La ventana se implementa con Tkinter y `psutil`; no abre el navegador ni necesita un servidor web.
 
 ---
 
@@ -39,11 +43,18 @@ Abre automáticamente tu navegador en `http://127.0.0.1:7860` con chat, monitore
 | `ptt` | Muestra el árbol de tareas de penetración (Pentest Task Tree). |
 | `ptt reset` | Reinicia el árbol de tareas de pentesting. |
 | `findings` | Lista de vulnerabilidades y puertos abiertos detectados en la sesión. |
+| `report` | Resumen defensivo de hallazgos y avance del PTT. |
 | `ping <host>` | Verificación de conectividad agnóstica de sistema operativo. |
 | `help` | Ayuda y listado de comandos. |
+
+También se aceptan frases naturales como `mostrame el estado`, `revisá los puertos de localhost`, `comprobá conectividad con 127.0.0.1`, `ver tareas pendientes`, `armá un informe` y preguntas defensivas como `cómo proteger una API contra fuerza bruta`.
+
+La base normativa funciona sin conexión y es una referencia práctica, no un catálogo exhaustivo ni una fuente legal actualizada automáticamente. Para uso operativo, valida las recomendaciones con la versión vigente de cada marco.
 
 ---
 
 ## ⚙️ Configuración Opcional de Inteligencia en la Nube
-Copia `.env.example` a `.env` y agrega tu `GEMINI_API_KEY` para activar el razonamiento con Google Gemini Flash. El modelo predeterminado es `gemini-3.8-flash`; puedes cambiarlo con `GEMINI_MODEL`.  
+Copia `.env.example` a `.env` y agrega tu `GEMINI_API_KEY` para activar el razonamiento con Google Gemini Flash. El modelo predeterminado es `gemini-3.8-flash`; si falla o se agota el tiempo, se intenta `gemini-3.6-flash` y luego el modo local.  
+El contexto de conversación se conserva durante la ejecución actual y no mezcla mensajes de ejecuciones anteriores.  
+También entendés frases en español. Los escaneos y pings a objetivos no locales piden confirmación HITL tanto en la terminal como en la GUI de escritorio.  
 *Nota: Si no agregas la API key, Anonymous funcionará de todos modos con sus motores locales integrados.*
