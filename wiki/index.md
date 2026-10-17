@@ -2,7 +2,7 @@
 type: index
 title: Catálogo Maestro de la LLM Wiki
 created: 2026-10-09
-updated: 2026-10-09
+updated: 2026-10-17
 tags:
   - wiki-index
   - navigation
@@ -23,7 +23,9 @@ tags:
 | **[[projects/openjarvis\|OpenJarvis]]** | Núcleo orquestador y runtime asíncrono para gestión de agentes, daemons y sesiones. | Ingestado |
 | **[[projects/jarvis\|Jarvis]]** | Asistente de escritorio de respuesta rápida con dictado por voz y atajos globales. | Ingestado |
 | **[[projects/ecc-agents\|ECC (.agents)]]** | Arnés de contención de seguridad ([[concepts/agentshield-hitl\|AgentShield]]) y optimización de contexto ([[concepts/context-budgeting\|Context Budget]]). | Ingestado |
-| **[[projects/anonymous\|Anonymous]]** | **Plataforma híbrida unificada:** Ensambla los 5 proyectos anteriores en una arquitectura nativa sin Docker. | Ingestado / Demo Operativa |
+| **[[projects/anonymous\|Anonymous]]** | **Plataforma híbrida unificada:** CLI + escritorio Tkinter; Docker Kali MCP es **opcional**. | Ingestado / Demo Operativa |
+| **[[projects/kali-mcp\|Kali MCP]]** | Contenedor Kali + MCP (`:666`). Markdown copiado a `wiki/kali-mcp/` y `anonymous/knowledge/kali/`. | Ingestado / Modo opcional |
+| **[[projects/documentacion-proyecto-anonimus\|Documentación Integral & Boceto Web]]** | Contexto detallado, resolución de problemas en el mundo real, flujo de usuario e interfaz web transmitida por Wi-Fi. | Activo / Documentado |
 
 ---
 
@@ -31,9 +33,9 @@ tags:
 
 | Página | Descripción y Parámetros Almacenados |
 | :--- | :--- |
-| **[[memory/system-config\|Configuración del Sistema]]** | Límites de hardware (8 GB RAM, Ryzen 5), regla No-Docker, puertos (7860) y endpoints. |
+| **[[memory/system-config\|Configuración del Sistema]]** | Hardware 8 GB; Docker **opcional** para Kali MCP (`:666`). |
 | **[[memory/user-preferences\|Preferencias del Usuario]]** | Perfil de Max, idioma español, terminal Warp, tono conciso y políticas de seguridad HITL. |
-| **[[memory/mcp-registry\|Registro de Servidores MCP]]** | Plantillas para Google AI Studio MCP, SQLite MCP y Filesystem MCP con sincronización global. |
+| **[[memory/mcp-registry\|Registro de Servidores MCP]]** | Google AI Studio, SQLite, Filesystem y **Kali MCP** (`http://localhost:666/mcp`). |
 | **[[memory/active-state\|Memoria de Trabajo Dinámica]]** | Objetivo actual (`127.0.0.1`), fase PTT activa (`Scanning & Enumeration`) y hallazgos recientes. |
 | **[[tools/mem\|Herramienta CLI `mem.py`]]** | Utilidad de consola para leer (`get`), alterar (`set-state`) o sincronizar (`sync-mcp`) memoria. |
 
@@ -57,6 +59,11 @@ tags:
 | :--- | :--- |
 | **[[comparisons/architecture-matrix\|Matriz de Arquitectura]]** | Tabla comparativa global de roles, consumos de RAM, dependencias y mapa de fusión hacia Anonymous. |
 | **[[comparisons/agent-runtimes\|Comparativa de Runtimes]]** | Evaluación técnica de los diferentes motores de bucle de control (*Agent Loops*) del ecosistema. |
+
+---
+
+## ⌨️ Comandos
+* **[[commands\|Catálogo de comandos]]**: CLI, escritorio y Kali MCP (qué está permitido y qué se rechaza).
 
 ---
 

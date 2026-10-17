@@ -47,7 +47,10 @@ wiki/
 │   ├── openjarvis.md
 │   ├── jarvis.md
 │   ├── ecc-agents.md
-│   └── anonymous.md
+│   ├── anonymous.md
+│   └── kali-mcp.md
+├── kali-mcp/                # Copia literal de markdown de kali-mcp-main
+├── commands.md              # Catálogo de comandos CLI / escritorio / Kali
 ├── concepts/                # Conceptos transversales y patrones de ingeniería
 │   ├── ptt-task-tree.md
 │   ├── agentshield-hitl.md

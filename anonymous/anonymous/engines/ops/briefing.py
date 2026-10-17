@@ -7,6 +7,7 @@ from typing import Dict, Any
 from anonymous.core.os_adapter import os_adapter
 from anonymous.core.session import session_manager
 from anonymous.engines.red.ptt import ptt_engine
+from anonymous.engines.ops.kali_mcp import kali_mcp_engine
 
 
 class BriefingEngine:
@@ -17,6 +18,7 @@ class BriefingEngine:
         findings = session_manager.get_findings(limit=5)
         findings_count = session_manager.count_findings()
         tasks = ptt_engine.get_all_tasks()
+        kali = kali_mcp_engine.status()
 
         completed_tasks = [t for t in tasks if t.get("status") == "completed"]
         in_progress_tasks = [t for t in tasks if t.get("status") == "in_progress"]
@@ -26,11 +28,13 @@ class BriefingEngine:
             f"• Sistema: {sys_info['os']} ({sys_info['sys_platform']}) en {sys_info['hostname']}\n"
             f"• IP Local: {sys_info['local_ip']}\n"
             f"• Tareas PTT: {len(completed_tasks)}/{len(tasks)} completadas ({len(in_progress_tasks)} en progreso)\n"
-            f"• Hallazgos registrados: {findings_count} eventos de seguridad guardados."
+            f"• Hallazgos registrados: {findings_count} eventos de seguridad guardados.\n"
+            f"• Kali MCP: {'arriba' if kali.get('mcp_healthy') else 'abajo'} ({kali.get('mcp_url')})"
         )
 
         return {
             "system_info": sys_info,
+            "kali": kali,
             "findings_count": findings_count,
             "recent_findings": findings,
             "tasks_summary": {

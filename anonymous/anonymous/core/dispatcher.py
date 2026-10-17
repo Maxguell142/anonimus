@@ -14,6 +14,7 @@ from anonymous.engines.red.recon import recon_engine
 from anonymous.engines.red.ptt import ptt_engine, TaskStatus
 from anonymous.engines.blue.rag_engine import rag_engine
 from anonymous.engines.ops.briefing import briefing_engine
+from anonymous.engines.ops.kali_mcp import kali_mcp_engine
 
 
 class Dispatcher:
@@ -27,7 +28,7 @@ class Dispatcher:
         parts = text.split()
         cmd = parts[0].lower()
 
-        if cmd in ("help", "ayuda", "?"):
+        if cmd in ("help", "ayuda", "?", "comandos"):
             return self._handle_help()
         if cmd in ("status", "estado", "briefing"):
             return self._handle_status()
@@ -51,6 +52,8 @@ class Dispatcher:
         if cmd in ("rag", "normativa"):
             query = " ".join(parts[1:]) if len(parts) > 1 else "seguridad"
             return self._handle_rag(query)
+        if cmd in ("kali", "kali-start", "kali-audit", "kali-finish", "kalistart"):
+            return self._handle_kali(text, confirmed_by_user)
 
         intent = parse_intent(text)
         if intent:
@@ -83,6 +86,8 @@ class Dispatcher:
             )
         if action == "rag":
             return self._handle_rag(intent.get("query") or "seguridad")
+        if action and str(action).startswith("kali"):
+            return self._handle_kali_intent(intent, confirmed)
         return self._handle_ai_query(str(intent))
 
     def _handle_help(self) -> Dict[str, Any]:
@@ -95,9 +100,15 @@ class Dispatcher:
             "• `ptt` / `ptt reset`   : Árbol de tareas de pentesting.\n"
             "• `findings`            : Hallazgos de la sesión.\n"
             "• `report`              : Resumen defensivo de hallazgos + PTT.\n"
-            "• `help`                : Esta ayuda.\n\n"
+            "• `kali status`         : Estado de Docker + MCP Kali.\n"
+            "• `kali start`/`stop`   : Levanta o para el contenedor (HITL).\n"
+            "• `kali-start <ip>`     : Sesión pasiva (carpeta de evidencias).\n"
+            "• `kali knowledge <t>`  : Busca playbooks markdown copiados de kali-mcp.\n"
+            "• `kali-finish`         : Cierra la sesión Kali.\n"
+            "• `help` / `comandos`   : Esta ayuda.\n\n"
             "También entendés lenguaje natural, por ejemplo:\n"
-            "`escaneá localhost`, `está vivo 127.0.0.1`, `qué dice OWASP sobre inyección SQL`."
+            "`escaneá localhost`, `está vivo 127.0.0.1`, `qué dice OWASP sobre inyección SQL`,\n"
+            "`levantá kali`, `estado de kali`, `playbook ssh`."
         )
         return {"type": "help", "message": help_text}
 
@@ -273,6 +284,66 @@ class Dispatcher:
         return {
             "type": "chat",
             "message": ai_response,
+        }
+
+    def _handle_kali_intent(self, intent: Dict[str, Any], confirmed: bool) -> Dict[str, Any]:
+        action = intent.get("action")
+        if action == "kali_status":
+            return {"type": "status", "message": kali_mcp_engine.status_text(), "data": kali_mcp_engine.status()}
+        if action == "kali_start_stack":
+            return self._wrap_kali(kali_mcp_engine.start_stack(confirmed), "kali start", confirmed)
+        if action == "kali_stop_stack":
+            return self._wrap_kali(kali_mcp_engine.stop_stack(confirmed), "kali stop", confirmed)
+        if action == "kali_session_start":
+            return self._wrap_kali(
+                kali_mcp_engine.start_session(intent.get("target") or "127.0.0.1"),
+                "kali-start",
+                True,
+            )
+        if action == "kali_finish":
+            return self._wrap_kali(kali_mcp_engine.finish_session(), "kali-finish", True)
+        if action == "kali_knowledge":
+            return self._wrap_kali(kali_mcp_engine.search_knowledge(intent.get("query") or ""), "kali knowledge", True)
+        if action == "kali_audit":
+            return self._wrap_kali(kali_mcp_engine.refuse_audit(), "kali-audit", True)
+        return self._handle_kali("kali status", confirmed)
+
+    def _handle_kali(self, text: str, confirmed: bool) -> Dict[str, Any]:
+        parts = text.replace("/", " ").split()
+        head = parts[0].lower() if parts else "kali"
+        if head in ("kali-start", "kalistart"):
+            target = parts[1] if len(parts) > 1 else "127.0.0.1"
+            return self._wrap_kali(kali_mcp_engine.start_session(target), text, True)
+        if head == "kali-finish":
+            return self._wrap_kali(kali_mcp_engine.finish_session(), text, True)
+        if head == "kali-audit":
+            return self._wrap_kali(kali_mcp_engine.refuse_audit(), text, True)
+        sub = parts[1].lower() if len(parts) > 1 else "status"
+        rest = " ".join(parts[2:])
+        if sub in ("status", "estado", "health", "salud"):
+            return {"type": "status", "message": kali_mcp_engine.status_text(), "data": kali_mcp_engine.status()}
+        if sub in ("start", "up", "levantar"):
+            return self._wrap_kali(kali_mcp_engine.start_stack(confirmed), "kali start", confirmed)
+        if sub in ("stop", "down", "parar"):
+            return self._wrap_kali(kali_mcp_engine.stop_stack(confirmed), "kali stop", confirmed)
+        if sub in ("knowledge", "docs", "playbook", "wiki"):
+            return self._wrap_kali(kali_mcp_engine.search_knowledge(rest or "index"), "kali knowledge", True)
+        if sub in ("exec", "execute", "run"):
+            return self._wrap_kali(kali_mcp_engine.refuse_exec(rest), "kali exec", True)
+        if sub == "start-session" or (sub == "session" and rest.startswith("start")):
+            target = parts[-1] if len(parts) > 2 else "127.0.0.1"
+            return self._wrap_kali(kali_mcp_engine.start_session(target), text, True)
+        return {"type": "status", "message": kali_mcp_engine.status_text(), "data": kali_mcp_engine.status()}
+
+    def _wrap_kali(self, result: Dict[str, Any], pending: str, confirmed: bool) -> Dict[str, Any]:
+        if result.get("type") == "confirmation_required" and not confirmed:
+            result["pending_message"] = pending
+            result["risk_level"] = "MEDIUM"
+            return result
+        return {
+            "type": "status" if result.get("ok", True) else "chat",
+            "message": result.get("message", str(result)),
+            "data": result,
         }
 
 

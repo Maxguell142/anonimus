@@ -125,8 +125,30 @@ def parse_intent(text: str) -> Optional[Dict[str, Any]]:
         if not unicodedata.combining(char)
     )
 
-    if re.search(r"\b(help|ayuda)\b", folded) and len(raw.split()) <= 3:
+    if re.search(r"\b(help|ayuda|comandos)\b", folded) and len(raw.split()) <= 3:
         return {"action": "help"}
+
+    if re.search(r"\bkali-audit\b", folded) or "auditoria kali" in folded or "auditoría kali" in folded:
+        return {"action": "kali_audit"}
+    if re.search(r"\bkali-finish\b", folded) or "cerrar sesion kali" in folded or "cerrar sesión kali" in folded:
+        return {"action": "kali_finish"}
+    if re.search(r"\bkali-start\b", folded) or re.search(r"\bsesion kali\b", folded) or re.search(r"\bsesión kali\b", folded):
+        return {"action": "kali_session_start", "target": _extract_target(raw) or "127.0.0.1"}
+    if re.search(r"\b(playbook|knowledge kali|docs kali)\b", folded) or (
+        "kali" in folded and any(w in folded for w in ("playbook", "knowledge", "documentacion", "documentación"))
+    ):
+        query = raw
+        for prefix in ("kali knowledge", "playbook", "docs kali"):
+            if folded.startswith(prefix):
+                query = raw.split(None, 2)[-1] if len(raw.split()) > 2 else raw
+                break
+        return {"action": "kali_knowledge", "query": query}
+    if re.search(r"\b(levant(a|á|ar) kali|iniciar kali|kali start|docker kali)\b", folded):
+        return {"action": "kali_start_stack"}
+    if re.search(r"\b(parar kali|detener kali|kali stop)\b", folded):
+        return {"action": "kali_stop_stack"}
+    if re.search(r"\b(estado de kali|kali status|salud kali|mcp kali)\b", folded):
+        return {"action": "kali_status"}
 
     if re.search(r"\b(ptt|arbol|arbol de tareas|task tree|tareas pendientes)\b", folded):
         if re.search(r"\b(reset|reinici|limpia|borra)\w*\b", folded):

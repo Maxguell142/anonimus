@@ -77,6 +77,22 @@ Conecta el asistente con las herramientas y APIs multimodales de Google AI Studi
 }
 ```
 
+### C. Kali MCP (contenedor Docker)
+```json
+{
+  "kali": {
+    "type": "http",
+    "url": "http://localhost:666/mcp",
+    "description": "Kali Linux tools via MCP. Arrancar con `kali start` en Anonymous o docker compose en kali-mcp-main.",
+    "status": "optional-docker"
+  }
+}
+```
+
+* **Archivo de proyecto:** `anonymous/.mcp.json`
+* **Compose:** `kali-mcp-main/docker/compose.yml` (puerto anfitrión 666 → 8000)
+* **En Anonymous:** el agente unificado no llama wrappers ofensivos; solo stack, salud, knowledge y sesiones pasivas. Ver [[projects/kali-mcp]] y [[commands]].
+
 ---
 
 ## 3. Protocolo de Sincronización con Antigravity

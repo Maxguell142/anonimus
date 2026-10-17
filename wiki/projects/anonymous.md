@@ -9,22 +9,22 @@ tags:
   - unified
   - fusion
 created: 2026-10-09
-updated: 2026-10-09
+updated: 2026-10-17
 ---
 
 # Anonymous - Plataforma Unificada de Ciberseguridad Híbrida
 
 > **Ubicación:** [`anonymous`](file:///C:/Users/maxgu/Documents/anonimus/anonymous)  
-> **Rol en el ecosistema:** Proyecto central que ensambla, consolida y optimiza los mejores módulos de [[pentestgpt]], [[cybersecurity-rag]], [[openjarvis]], [[jarvis]] y [[ecc-agents]].
+> **Rol en el ecosistema:** Proyecto central que ensambla módulos de [[pentestgpt]], [[cybersecurity-rag]], [[openjarvis]], [[jarvis]], [[ecc-agents]] y el modo opcional [[kali-mcp]].
 
 ---
 
 ## 1. Visión General y Propósito
 
 **Anonymous** nace de la necesidad de contar con una herramienta completa de ciberseguridad (Red Team + Blue Team + Asistente) que sea:
-1. **100% Nativa y Ligera:** Capaz de correr con fluidez en una máquina con procesador AMD Ryzen 5 y **8 GB de RAM**, **sin necesidad de Docker**.
-2. **Multiplataforma Real:** Funciona de forma idéntica en Windows 11 (PowerShell/CMD) y en Linux (Bash/Zsh) mediante una capa de abstracción ([[multiplatform-os]]).
-3. **Híbrida Dual:** Ofrece modo terminal rápido en Warp (`python run.py`) y un dashboard visual interactivo bajo demanda (`python run.py --gui`).
+1. **Nativa por defecto:** Corre en Ryzen 5 / 8 GB **sin Docker**. El núcleo (scan, RAG, PTT, AgentShield) no depende del contenedor.
+2. **Kali MCP opcional:** `kali start` levanta Docker Kali + MCP en `:666` (HITL, consume RAM). Ver [[kali-mcp]] y [[commands]].
+3. **Dos interfaces, un despachador:** terminal (`python run.py`) y escritorio Tkinter (`python run.py --gui`). No hace falta página web para operar.
 
 ---
 
@@ -87,11 +87,13 @@ python run.py
 ```
 Permite auditar redes, visualizar árboles de tareas y consultar normativas directamente desde la línea de comandos con consumo de memoria inferior a 60 MB.
 
-### Modo 2: Panel Gráfico Web (GUI)
+### Modo 2: Escritorio (Tkinter, no web)
 ```bash
 python run.py --gui
 ```
-Levanta el servidor local en `http://127.0.0.1:7860` con sincronización en tiempo real del estado de tareas y hallazgos.
+Centro de control nativo. Los mismos comandos Kali y núcleo que en terminal.
+
+Catálogo completo: [[commands]].
 
 ---
 
@@ -100,4 +102,6 @@ Levanta el servidor local en `http://127.0.0.1:7860` con sincronización en tiem
 * [[cybersecurity-rag]] - Origen del conocimiento normativo.
 * [[openjarvis]] - Origen del modelo de despacho y sesiones.
 * [[ecc-agents]] - Origen de los filtros de contención de seguridad.
+* [[kali-mcp]] - Docker + MCP opcional.
+* [[commands]] - Todos los comandos.
 * [[architecture-matrix]] - Matriz comparativa de especificaciones.

@@ -48,3 +48,17 @@ Registro inmutable de operaciones de ingesta, consultas y salud sobre la base de
 - Creada herramienta CLI en Python [[tools/mem|tools/mem.py]] para inspección y mutación rápida de estados desde la terminal.
 - Actualizado [[SCHEMA.md]] con el nuevo **Protocolo Memory** y actualizado [[index.md]].
 
+## [2026-10-16] feature | Boceto Web Táctico y Documentación Integral en Obsidian
+- Creado el módulo web independiente en `pagina/` con `index.html`, `styles.css`, `app.js` y `server.py`.
+- Implementado servidor nativo en Python enlazado a `0.0.0.0:8080`, permitiendo transmisión local (`http://localhost:8080`) y acceso por red Wi-Fi (`http://10.0.5.49:8080`).
+- Diseñado boceto de interfaz HUD táctico (inspirado en Stark Industries / Cyberpunk) con radar en HTML5 Canvas, escáner de sockets TCP, árbol de tareas PTT interactivo, asesor RAG normativo (OWASP/MITRE/CIS) y arnés de seguridad AgentShield (HITL).
+- Redactada la documentación completa para Obsidian en [[projects/documentacion-proyecto-anonimus]] abordando contexto, resolución de problemas en el mundo real y flujo de interacción.
+- Replicada la documentación en `C:\Users\maxgu\Documents\Obsidian Vault\documentacion-proyecto-anonimus.md` para visibilidad inmediata en ambos vaults.
+
+## [2026-10-17] ingest | Kali MCP → Anonymous + wiki
+- Copiados 45 archivos `.md` de `kali-mcp-main` a `wiki/kali-mcp/` y `anonymous/knowledge/kali/`.
+- Creada página [[projects/kali-mcp]] y catálogo [[commands]].
+- Anonymous: motor `engines/ops/kali_mcp.py` (Docker compose HITL, salud MCP, sesiones pasivas, búsqueda de playbooks). `kali-audit` y `kali exec` ofensivo se rechazan.
+- Actualizados [[index]], [[memory/system-config]] (Docker opcional), [[memory/mcp-registry]], [[projects/anonymous]] y `anonymous/.mcp.json`.
+
+

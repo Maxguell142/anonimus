@@ -39,3 +39,8 @@ SERVER_PORT = int(os.getenv("ANONYMOUS_PORT", "7860"))
 # Security Guardrails Settings (ECC AgentShield)
 SAFE_MODE = os.getenv("ANONYMOUS_SAFE_MODE", "true").lower() in ("1", "true", "yes")
 AUTO_APPROVE_LOW_RISK = True
+
+# Optional Kali MCP (Docker). Default: sibling checkout kali-mcp-main.
+KALI_MCP_ROOT = Path(os.getenv("KALI_MCP_ROOT", str(PROJECT_ROOT.parent / "kali-mcp-main")))
+KALI_MCP_URL = os.getenv("KALI_MCP_URL", "http://127.0.0.1:666/mcp")
+KALI_SESSIONS_DIR = Path(os.getenv("KALI_SESSIONS_DIR", str(USER_DATA_DIR / "kali_sessions")))

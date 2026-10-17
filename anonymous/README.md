@@ -5,6 +5,7 @@ Asistente híbrido unificado de ciberseguridad que fusiona:
 - **Asesor defensivo local**: búsqueda en referencias OWASP Top 10, MITRE ATT&CK, CIS Controls v8 y NIST CSF 2.0.
 - **Centro de control Anonymous**: monitoreo local del equipo, registro de eventos y comandos desde una interfaz de escritorio.
 - **ECC AgentShield**: Arnés de validación de comandos y Human-In-The-Loop para máxima seguridad.
+- **Kali MCP (opcional)**: Docker con Kali y MCP en `http://127.0.0.1:666/mcp`. Documentación copiada a la wiki. No ejecuta explotación automática.
 
 ---
 
@@ -45,7 +46,14 @@ La ventana se implementa con Tkinter y `psutil`; no abre el navegador ni necesit
 | `findings` | Lista de vulnerabilidades y puertos abiertos detectados en la sesión. |
 | `report` | Resumen defensivo de hallazgos y avance del PTT. |
 | `ping <host>` | Verificación de conectividad agnóstica de sistema operativo. |
-| `help` | Ayuda y listado de comandos. |
+| `help` / `comandos` | Ayuda y listado de comandos. |
+| `kali status` | Docker + salud del MCP Kali (`:666`). |
+| `kali start` / `kali stop` | Levanta o para el contenedor (pide confirmación). |
+| `kali-start <objetivo>` | Sesión pasiva de evidencias. |
+| `kali knowledge <tema>` | Playbooks markdown copiados de kali-mcp. |
+| `kali-finish` | Cierra la sesión Kali. |
+
+`kali-audit` y `kali exec` ofensivo **no están habilitados** (límite de seguridad). Catálogo: `../wiki/commands.md`.
 
 También se aceptan frases naturales como `mostrame el estado`, `revisá los puertos de localhost`, `comprobá conectividad con 127.0.0.1`, `ver tareas pendientes`, `armá un informe` y preguntas defensivas como `cómo proteger una API contra fuerza bruta`.
 
