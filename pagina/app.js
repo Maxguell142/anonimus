@@ -175,6 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initEventListeners();
   loadInitialData();
   fetchServerStatus();
+  setInterval(() => fetchServerStatus(true), 5000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) fetchServerStatus(true);
+  });
 });
 
 // Reloj en tiempo real
@@ -302,7 +306,7 @@ function initCanvasRadar() {
 // =====================================================================
 // CONEXIÓN CON EL SERVIDOR HTTP TÁCTICO (/api)
 // =====================================================================
-async function fetchServerStatus() {
+async function fetchServerStatus(silent = false) {
   try {
     const res = await fetch('/api/status');
     if (res.ok) {
@@ -312,15 +316,19 @@ async function fetchServerStatus() {
         AppState.serverPort = data.port || 8080;
         updateWifiChip();
       }
-      if (data.findings_count) {
+      if (data.findings_count && !silent) {
         fetchFindings();
       }
-      printTermLine(`[ENLACE SERVIDOR] Conectado exitosamente al daemon de Anonymous (${data.local_ip}:${data.port}).`, 'success');
+      if (!silent) {
+        printTermLine(`[ENLACE SERVIDOR] Conectado exitosamente al daemon de Anonymous (${data.local_ip}:${data.port}).`, 'success');
+      }
     }
   } catch (err) {
-    // Si no está corriendo el backend, el boceto interactúa en modo cliente autónomo
-    console.info('Servidor API en modo local/standalone:', err.message);
-    updateWifiChip();
+    if (!silent) {
+      // Si no está corriendo el backend, el boceto interactúa en modo cliente autónomo
+      console.info('Servidor API en modo local/standalone:', err.message);
+      updateWifiChip();
+    }
   }
 }
 

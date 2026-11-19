@@ -11,10 +11,14 @@
             "id": "bd9b5d94adc29206",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Vista gráfica"
+              "type": "markdown",
+              "state": {
+                "file": "index.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "index"
             }
           }
         ]
@@ -184,21 +188,31 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "bd9b5d94adc29206",
+  "active": "4558fb4c7fd9e092",
   "lastOpenFiles": [
-    "index.md",
-    "Sin nombre",
-    "tools/mem.py",
+    "projects/pentestgpt.md",
+    "projects/anonymous.md",
+    "projects/cybersecurity-rag.md",
+    "projects/openjarvis.md",
+    "projects/documentacion-proyecto-anonimus.md",
+    "comparisons/architecture-matrix.md",
+    "concepts/agentshield-hitl.md",
+    "concepts/rag-vs-wiki.md",
+    "concepts/context-budgeting.md",
+    "concepts/ptt-task-tree.md",
     "memory/active-state.md",
     "memory/mcp-registry.md",
     "memory/user-preferences.md",
     "memory/system-config.md",
+    "projects/jarvis.md",
+    "projects/ecc-agents.md",
+    "log.md",
+    "index.md",
+    "Sin nombre",
+    "tools/mem.py",
     "tools",
     "memory",
-    "projects/anonymous.md",
-    "log.md",
     "SCHEMA.md",
-    "comparisons/agent-runtimes.md",
-    "projects/cybersecurity-rag.md"
+    "comparisons/agent-runtimes.md"
   ]
 }

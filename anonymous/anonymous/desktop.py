@@ -24,6 +24,13 @@ from anonymous.desktop_layout import (
     save_layout,
 )
 from anonymous.engines.red.ptt import ptt_engine
+from anonymous.settings import (
+    BACKEND_LABELS,
+    PROVIDER_LABELS,
+    SettingsError,
+    apply_runtime_settings,
+    settings_store,
+)
 
 BACKGROUND = "#080d12"
 PANEL = "#10191c"
@@ -85,12 +92,21 @@ MATRIX_CHARS = "01アイウエオカキクケコサシスセソタチツテト"
 class DesktopApp:
     """A btop/cmatrix/pipes.sh-inspired dashboard with movable, resizable panels."""
 
-    def __init__(self, root: Any, tk: Any, ttk: Any, scrolled_text: Any, messagebox: Any):
+    def __init__(
+        self,
+        root: Any,
+        tk: Any,
+        ttk: Any,
+        scrolled_text: Any,
+        messagebox: Any,
+        profile_name: str = "",
+    ):
         self.root = root
         self.tk = tk
         self.ttk = ttk
         self.scrolled_text = scrolled_text
         self.messagebox = messagebox
+        self.profile_name = profile_name
         self.results: queue.Queue[Tuple[str, Any]] = queue.Queue()
         self.busy = False
         self.pending_confirmation: Optional[str] = None
@@ -115,6 +131,8 @@ class DesktopApp:
         self._build_layout()
         self.set_mode("normal", add_event=False)
         self._append_event("ANONYMOUS", "Centro de control iniciado.", MUTED)
+        if self.profile_name:
+            self._append_event("PERFIL", f"Sesión local de {self.profile_name}.", MUTED, "muted")
         self._refresh_panels()
         self._animate_matrix()
         self._animate_pipes()
@@ -203,6 +221,19 @@ class DesktopApp:
             command=self.reset_layout,
             bg=SURFACE,
             fg=MUTED,
+            relief="flat",
+            borderwidth=0,
+            padx=8,
+            pady=5,
+            font=("Cascadia Code", 7, "bold"),
+            cursor="hand2",
+        ).pack(side="right", padx=3)
+        tk.Button(
+            toolbar,
+            text="CONFIGURACIÓN",
+            command=self._open_settings_dialog,
+            bg=SURFACE,
+            fg=CYAN,
             relief="flat",
             borderwidth=0,
             padx=8,
@@ -526,6 +557,254 @@ class DesktopApp:
     def _persist_layout(self) -> None:
         save_layout(LAYOUT_PATH, self.layout, self.visible_panels)
 
+    def _open_settings_dialog(self) -> None:
+        try:
+            settings = settings_store.load()
+        except SettingsError as exc:
+            self.messagebox.showerror(
+                "Configuración no disponible",
+                f"No se pudieron leer los ajustes:\n{exc}",
+                parent=self.root,
+            )
+            return
+        dialog = self.tk.Toplevel(self.root)
+        dialog.title("Anonymous | Configuración")
+        dialog.geometry("760x850")
+        dialog.minsize(650, 700)
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        content = self.ttk.Frame(dialog, padding=12)
+        content.pack(fill="both", expand=True)
+        content.columnconfigure(0, weight=1)
+
+        ai_frame = self.ttk.LabelFrame(content, text="Inteligencia artificial", padding=10)
+        ai_frame.grid(row=0, column=0, sticky="ew", pady=(0, 8))
+        ai_frame.columnconfigure(1, weight=1)
+        provider_display_by_key = {
+            key: label for key, label in PROVIDER_LABELS.items()
+        }
+        provider_key_by_display = {
+            label: key for key, label in PROVIDER_LABELS.items()
+        }
+        provider_var = self.tk.StringVar(value=provider_display_by_key[settings["ai_provider"]])
+        self.ttk.Label(ai_frame, text="Proveedor").grid(row=0, column=0, sticky="w", padx=(0, 10), pady=3)
+        self.ttk.Combobox(
+            ai_frame,
+            textvariable=provider_var,
+            values=tuple(PROVIDER_LABELS.values()),
+            state="readonly",
+        ).grid(row=0, column=1, sticky="ew", pady=3)
+
+        entries: Dict[str, Any] = {}
+
+        def add_entry(parent: Any, row: int, label: str, key: str, value: Any, secret: bool = False) -> Any:
+            self.ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", padx=(0, 10), pady=3)
+            entry = self.ttk.Entry(parent, show="*" if secret else "")
+            entry.insert(0, str(value))
+            entry.grid(row=row, column=1, sticky="ew", pady=3)
+            entries[key] = entry
+            return entry
+
+        add_entry(ai_frame, 1, "URL Ollama", "ollama_base_url", settings["ollama_base_url"])
+        add_entry(ai_frame, 2, "Modelo Ollama", "ollama_model", settings["ollama_model"])
+        add_entry(ai_frame, 3, "Modelo Gemini", "gemini_model", settings["gemini_model"])
+        add_entry(
+            ai_frame,
+            4,
+            "Modelo Gemini de respaldo",
+            "gemini_fallback_model",
+            settings["gemini_fallback_model"],
+        )
+        add_entry(ai_frame, 5, "Timeout Ollama (s)", "ollama_timeout", settings["ollama_timeout"])
+        add_entry(ai_frame, 6, "Timeout Gemini (s)", "gemini_timeout", settings["gemini_timeout"])
+        try:
+            key_status = "configurada" if settings_store.get_api_key() else "no configurada"
+        except SettingsError as exc:
+            key_status = f"no disponible ({exc})"
+        self.ttk.Label(
+            ai_frame,
+            text=(
+                f"Clave API Gemini: {key_status} (nunca se muestra ni se guarda en settings.json; "
+                "si no hay clave de sistema, se usa GEMINI_API_KEY)"
+            ),
+        ).grid(row=7, column=0, columnspan=2, sticky="w", pady=(5, 2))
+        key_entry = self.ttk.Entry(ai_frame, show="*")
+        key_entry.grid(row=8, column=1, sticky="ew", pady=3)
+        self.ttk.Label(ai_frame, text="Nueva clave API Gemini").grid(row=8, column=0, sticky="w", padx=(0, 10), pady=3)
+        clear_key_var = self.tk.BooleanVar(value=False)
+        self.ttk.Checkbutton(
+            ai_frame,
+            text="Eliminar la clave del almacén del sistema (no borra GEMINI_API_KEY)",
+            variable=clear_key_var,
+        ).grid(row=9, column=0, columnspan=2, sticky="w", pady=(3, 0))
+
+        environment_frame = self.ttk.LabelFrame(content, text="Entorno Kali y conexión", padding=10)
+        environment_frame.grid(row=1, column=0, sticky="ew", pady=(0, 8))
+        environment_frame.columnconfigure(1, weight=1)
+        backend_display_by_key = {key: label for key, label in BACKEND_LABELS.items()}
+        backend_key_by_display = {label: key for key, label in BACKEND_LABELS.items()}
+        backend_var = self.tk.StringVar(value=backend_display_by_key[settings["kali_backend"]])
+        self.ttk.Label(environment_frame, text="Entorno").grid(
+            row=0, column=0, sticky="w", padx=(0, 10), pady=3
+        )
+        self.ttk.Combobox(
+            environment_frame,
+            textvariable=backend_var,
+            values=tuple(BACKEND_LABELS.values()),
+            state="readonly",
+        ).grid(row=0, column=1, sticky="ew", pady=3)
+        self.ttk.Label(
+            environment_frame,
+            text=(
+                "native = motores locales; docker y VirtualBox usan MCP; cloud conecta al Kali existente "
+                "por SSH con host key verificada."
+            ),
+        ).grid(row=1, column=0, columnspan=2, sticky="w", pady=(3, 5))
+        for row, backend in enumerate(("docker", "virtualbox"), start=2):
+            add_entry(
+                environment_frame,
+                row,
+                f"URL MCP {backend}",
+                f"mcp_{backend}",
+                settings["mcp_urls"][backend],
+            )
+        cloud_ssh = settings["cloud_ssh"]
+        add_entry(environment_frame, 4, "Host o IPv4 Kali cloud", "ssh_host", cloud_ssh["host"])
+        add_entry(environment_frame, 5, "Usuario SSH", "ssh_username", cloud_ssh["username"])
+        add_entry(environment_frame, 6, "Puerto SSH", "ssh_port", cloud_ssh["port"])
+
+        from tkinter import filedialog
+
+        def add_path_entry(row: int, label: str, key: str, value: str, title: str) -> None:
+            add_entry(environment_frame, row, label, key, value)
+
+            def browse() -> None:
+                selected = filedialog.askopenfilename(parent=dialog, title=title)
+                if selected:
+                    entries[key].delete(0, "end")
+                    entries[key].insert(0, selected)
+
+            self.ttk.Button(
+                environment_frame,
+                text="Examinar...",
+                command=browse,
+            ).grid(row=row, column=2, padx=(6, 0), pady=3)
+
+        add_path_entry(7, "Clave privada SSH", "ssh_key_path", cloud_ssh["key_path"], "Seleccionar clave SSH")
+        add_path_entry(
+            8,
+            "Archivo known_hosts",
+            "ssh_known_hosts",
+            cloud_ssh["known_hosts"],
+            "Seleccionar known_hosts",
+        )
+
+        profile_frame = self.ttk.LabelFrame(content, text="Perfil local", padding=10)
+        profile_frame.grid(row=2, column=0, sticky="ew", pady=(0, 8))
+        profile_frame.columnconfigure(1, weight=1)
+        add_entry(profile_frame, 0, "Nombre visible", "user_name", settings["user_name"])
+        self.ttk.Label(
+            content,
+            text="AgentShield y las confirmaciones de seguridad permanecen activos para todos los entornos.",
+        ).grid(row=3, column=0, sticky="w", pady=(0, 8))
+
+        buttons = self.ttk.Frame(content)
+        buttons.grid(row=4, column=0, sticky="e")
+        self.ttk.Button(buttons, text="Cancelar", command=dialog.destroy).pack(side="right", padx=(6, 0))
+
+        def save_dialog_settings() -> None:
+            updated = dict(settings)
+            updated["ai_provider"] = provider_key_by_display[provider_var.get()]
+            updated["ollama_base_url"] = entries["ollama_base_url"].get().strip()
+            updated["ollama_model"] = entries["ollama_model"].get().strip()
+            updated["gemini_model"] = entries["gemini_model"].get().strip()
+            updated["gemini_fallback_model"] = entries["gemini_fallback_model"].get().strip()
+            try:
+                updated["ollama_timeout"] = int(entries["ollama_timeout"].get())
+                updated["gemini_timeout"] = int(entries["gemini_timeout"].get())
+            except ValueError:
+                self.messagebox.showerror(
+                    "Timeout no válido",
+                    "Los timeouts deben ser números enteros.",
+                    parent=dialog,
+                )
+                return
+            updated["kali_backend"] = backend_key_by_display[backend_var.get()]
+            updated["user_name"] = entries["user_name"].get().strip()
+            updated["mcp_urls"] = {
+                backend: entries[f"mcp_{backend}"].get().strip()
+                for backend in ("docker", "virtualbox")
+            }
+            updated["mcp_urls"]["cloud"] = settings["mcp_urls"]["cloud"]
+            updated["cloud_ssh"] = dict(settings["cloud_ssh"])
+            updated["cloud_ssh"].update(
+                host=entries["ssh_host"].get().strip(),
+                username=entries["ssh_username"].get().strip(),
+                key_path=entries["ssh_key_path"].get().strip(),
+                known_hosts=entries["ssh_known_hosts"].get().strip(),
+            )
+            try:
+                updated["cloud_ssh"]["port"] = int(entries["ssh_port"].get())
+            except ValueError:
+                self.messagebox.showerror(
+                    "Puerto SSH no válido",
+                    "El puerto SSH debe ser un número entero.",
+                    parent=dialog,
+                )
+                return
+            try:
+                settings_store.save(updated)
+            except (SettingsError, ValueError, OSError) as exc:
+                self.messagebox.showerror(
+                    "Ajustes no guardados",
+                    f"No se guardaron los cambios:\n{exc}",
+                    parent=dialog,
+                )
+                return
+
+            new_key = key_entry.get()
+            try:
+                if clear_key_var.get():
+                    settings_store.set_api_key("")
+                elif new_key:
+                    settings_store.set_api_key(new_key)
+            except SettingsError as exc:
+                try:
+                    apply_runtime_settings(updated)
+                except (SettingsError, ValueError, RuntimeError, OSError) as apply_exc:
+                    self.messagebox.showerror(
+                        "Ajustes guardados parcialmente",
+                        f"Las preferencias se guardaron, pero la clave no pudo actualizarse "
+                        f"y no se aplicaron en memoria:\n{exc}\n{apply_exc}",
+                        parent=dialog,
+                    )
+                    return
+                self.messagebox.showerror(
+                    "Clave no actualizada",
+                    f"Los demás ajustes se guardaron, pero la clave no pudo actualizarse:\n{exc}",
+                    parent=dialog,
+                )
+                return
+
+            try:
+                apply_runtime_settings(updated)
+            except (SettingsError, ValueError, RuntimeError, OSError) as exc:
+                self.messagebox.showerror(
+                    "Ajustes guardados parcialmente",
+                    f"Se guardaron las preferencias, pero no se pudieron aplicar en memoria:\n{exc}",
+                    parent=dialog,
+                )
+                return
+            self.messagebox.showinfo(
+                "Configuración",
+                "Ajustes guardados y aplicados.",
+                parent=dialog,
+            )
+            dialog.destroy()
+
+        self.ttk.Button(buttons, text="Guardar", command=save_dialog_settings).pack(side="right")
+
     def set_mode(self, mode: str, add_event: bool = True) -> None:
         if mode not in MODE_CONFIG:
             raise ValueError(f"Unknown interface mode: {mode}")
@@ -717,7 +996,7 @@ class DesktopApp:
                 self.busy = False
                 self.send_button.configure(state="normal")
                 if result.get("type") == "confirmation_required":
-                    self.pending_confirmation = command
+                    self.pending_confirmation = result.get("pending_message", command)
                     approved = self.messagebox.askyesno(
                         "Confirmación requerida",
                         result.get("message", "¿Autorizar esta acción?"),
@@ -783,6 +1062,12 @@ class DesktopApp:
 
 def run_desktop() -> None:
     """Start the native Anonymous dashboard."""
+    settings = None
+    settings_error = ""
+    try:
+        settings = apply_runtime_settings()
+    except (SettingsError, ValueError, RuntimeError, OSError) as exc:
+        settings_error = str(exc)
     try:
         import tkinter as tk
         from tkinter import messagebox, scrolledtext, ttk
@@ -792,5 +1077,21 @@ def run_desktop() -> None:
         ) from exc
 
     root = tk.Tk()
-    DesktopApp(root, tk, ttk, scrolledtext, messagebox)
+    DesktopApp(
+        root,
+        tk,
+        ttk,
+        scrolledtext,
+        messagebox,
+        profile_name=settings["user_name"] if settings else "",
+    )
+    if settings_error:
+        root.after(
+            0,
+            lambda: messagebox.showerror(
+                "Ajustes no aplicados",
+                f"Anonymous inició con la configuración predeterminada:\n{settings_error}",
+                parent=root,
+            ),
+        )
     root.mainloop()

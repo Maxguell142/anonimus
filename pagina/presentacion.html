@@ -10,6 +10,10 @@
 </head>
 <body data-mode="normal">
 
+  <video class="page-background-video" autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1">
+    <source src="gemini_generated_video_69e8aa93.mp4" type="video/mp4">
+  </video>
+
   <!-- Barra de progreso de lectura superior -->
   <div id="scroll-progress"></div>
 
@@ -871,7 +875,7 @@ class AgentShield:
           <span class="faq-icon">&#9660;</span>
         </button>
         <div class="faq-answer">
-          No. La base de conocimiento defensiva de <b>OWASP Top 10, MITRE ATT&CK y CIS Controls v8</b> está embebida en memoria y estructurada en diccionarios y SQLite. Funciona 100% offline. La conexión a internet únicamente se utiliza de forma opcional si el usuario decide configurar una API Key de Google Gemini Flash en su archivo <code>.env</code> para consultas de razonamiento avanzado.
+          No. El RAG local combina referencias defensivas de <b>OWASP, MITRE, CIS y NIST</b> con documentos PDF, Markdown y texto guardados en <code>RAG/documents/</code>. Extrae el texto en el equipo, devuelve la fuente y página, y guarda el índice localmente; no necesita internet. Los PDF escaneados requieren OCR. Gemini sigue siendo opcional para consultas de razonamiento avanzado.
         </div>
       </div>
     </div>

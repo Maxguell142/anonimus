@@ -7,6 +7,7 @@ from typing import Dict, Any
 from anonymous.core.os_adapter import os_adapter
 from anonymous.core.session import session_manager
 from anonymous.engines.red.ptt import ptt_engine
+from anonymous.engines.ops.kali_forensics import kali_forensics_engine
 from anonymous.engines.ops.kali_mcp import kali_mcp_engine
 
 
@@ -19,6 +20,7 @@ class BriefingEngine:
         findings_count = session_manager.count_findings()
         tasks = ptt_engine.get_all_tasks()
         kali = kali_mcp_engine.status()
+        kali_forensics = kali_forensics_engine.status()
 
         completed_tasks = [t for t in tasks if t.get("status") == "completed"]
         in_progress_tasks = [t for t in tasks if t.get("status") == "in_progress"]
@@ -29,7 +31,10 @@ class BriefingEngine:
             f"• IP Local: {sys_info['local_ip']}\n"
             f"• Tareas PTT: {len(completed_tasks)}/{len(tasks)} completadas ({len(in_progress_tasks)} en progreso)\n"
             f"• Hallazgos registrados: {findings_count} eventos de seguridad guardados.\n"
-            f"• Kali MCP: {'arriba' if kali.get('mcp_healthy') else 'abajo'} ({kali.get('mcp_url')})"
+            f"• Kali forense: {kali_forensics['state']} "
+            f"({'conectado' if kali_forensics['connected'] else 'no conectado'})\n"
+            f"• Kali MCP opcional: {'arriba' if kali.get('mcp_healthy') else 'abajo'} "
+            f"({kali.get('mcp_url')})"
         )
 
         return {
@@ -37,6 +42,7 @@ class BriefingEngine:
             "kali": kali,
             "findings_count": findings_count,
             "recent_findings": findings,
+            "kali_forensics": kali_forensics,
             "tasks_summary": {
                 "total": len(tasks),
                 "completed": len(completed_tasks),

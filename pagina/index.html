@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anonymous // Tactical Cyber HUD & Boceto</title>
+  <title>WEP-SER-IP // Anonymous Tactical HUD</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 </head>
 <body data-mode="normal">
+  <canvas id="glyph-stream-canvas" class="glyph-stream-canvas" aria-hidden="true"></canvas>
 
   <!-- ===================================================================
        ENCABEZADO TÁCTICO & TELEMETRÍA DE RED
@@ -377,5 +378,6 @@
 
   <!-- Script de Interacción y Lógica Frontend -->
   <script src="app.js"></script>
+  <script src="glyph-stream.js"></script>
 </body>
 </html>

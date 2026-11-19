@@ -10,17 +10,22 @@ import os
 import sys
 import json
 import socket
+import ipaddress
 import argparse
 import threading
 import mimetypes
+import re
+import subprocess
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from typing import Dict, Any, List
 import urllib.parse
+import urllib.request
 import time
 
 # Directorio de archivos web
 PAGINA_DIR = Path(__file__).resolve().parent
+BUILD_DIR = PAGINA_DIR / "dist"
 PROJECT_ROOT = PAGINA_DIR.parent
 
 # Intentar importar el motor de Anonymous si está disponible en sys.path
@@ -105,6 +110,117 @@ SESSION_STATE = {
         }
     ]
 }
+
+WEB_CLIENTS: Dict[tuple[str, str], Dict[str, Any]] = {}
+WEB_CLIENTS_LOCK = threading.Lock()
+WEB_CLIENT_ACTIVE_SECONDS = 20
+DASHBOARD_ACTIVE = False
+
+
+def record_web_client(ip: str, user_agent: str) -> bool:
+    """Record a web visitor and report whether this is a new/reconnected client."""
+    now = time.time()
+    client_key = (ip, user_agent)
+    with WEB_CLIENTS_LOCK:
+        previous = WEB_CLIENTS.get(client_key)
+        is_new_connection = (
+            previous is None
+            or now - previous["last_seen"] > WEB_CLIENT_ACTIVE_SECONDS
+        )
+        WEB_CLIENTS[client_key] = {"ip": ip, "user_agent": user_agent, "last_seen": now}
+        for key, client in list(WEB_CLIENTS.items()):
+            if now - client["last_seen"] > WEB_CLIENT_ACTIVE_SECONDS * 10:
+                del WEB_CLIENTS[key]
+    return is_new_connection
+
+
+def get_active_web_clients() -> List[Dict[str, Any]]:
+    """Return browsers that have made a request within the last minute."""
+    now = time.time()
+    with WEB_CLIENTS_LOCK:
+        clients = [
+            {
+                "ip": client["ip"],
+                "user_agent": client["user_agent"],
+                "last_seen": time.strftime("%H:%M:%S", time.localtime(client["last_seen"])),
+            }
+            for client in WEB_CLIENTS.values()
+            if now - client["last_seen"] <= WEB_CLIENT_ACTIVE_SECONDS
+        ]
+    return sorted(clients, key=lambda client: (client["ip"], client["user_agent"]))
+
+
+def parse_arp_cache(output: str) -> List[Dict[str, str]]:
+    """Parse unicast IPv4 and MAC address pairs from the operating system ARP cache."""
+    devices = {}
+    entry_pattern = re.compile(
+        r"(?P<ip>(?:\d{1,3}\.){3}\d{1,3})\s+"
+        r"(?P<mac>(?:[0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2})"
+    )
+    for match in entry_pattern.finditer(output):
+        ip = ipaddress.ip_address(match.group("ip"))
+        if ip.is_multicast or ip.is_unspecified or ip == ipaddress.IPv4Address("255.255.255.255"):
+            continue
+        devices[str(ip)] = {"ip": str(ip), "mac": match.group("mac").replace("-", ":").upper()}
+    return sorted(devices.values(), key=lambda device: tuple(int(part) for part in device["ip"].split(".")))
+
+
+def get_lan_devices() -> List[Dict[str, str]]:
+    """Read known local IPv4 neighbors from the OS ARP cache without probing the LAN."""
+    result = subprocess.run(
+        ["arp", "-a"],
+        capture_output=True,
+        text=True,
+        timeout=3,
+        check=True,
+    )
+    return parse_arp_cache(result.stdout)
+
+
+def render_live_dashboard(
+    banner: str,
+    local_ip: str,
+    port: int,
+    web_clients: List[Dict[str, str]],
+    lan_devices: List[Dict[str, str]],
+    lan_error: str = "",
+) -> str:
+    """Render the terminal dashboard with active web visitors and cached LAN devices."""
+    lines = [
+        banner.rstrip(),
+        "",
+        f"  [>] ESTADO: ONLINE | IP DEL SERVIDOR: {local_ip}:{port}",
+        f"  [>] VISITANTES WEB ACTIVOS: {len(web_clients)} (últimos {WEB_CLIENT_ACTIVE_SECONDS}s)",
+        "  --------------------------------------------------------------------",
+    ]
+    if web_clients:
+        for client in web_clients:
+            lines.append(
+                f"  [ONLINE] IP: {client['ip']:<15} | ÚLTIMA ACTIVIDAD: {client['last_seen']} "
+                f"| {client['user_agent']}"
+            )
+    else:
+        lines.append("  Sin visitantes web activos. Abre el enlace desde otro dispositivo.")
+
+    lines.extend([
+        "",
+        f"  [>] EQUIPOS EN CACHÉ ARP: {len(lan_devices)} (lista pasiva del sistema)",
+        "  --------------------------------------------------------------------",
+    ])
+    if lan_devices:
+        for device in lan_devices:
+            lines.append(f"  IP: {device['ip']:<15} | MAC: {device['mac']}")
+    else:
+        lines.append("  No hay equipos en la caché ARP del sistema.")
+    if lan_error:
+        lines.append(f"  [AVISO] No se pudo actualizar la caché ARP: {lan_error}")
+    lines.extend([
+        "",
+        f"  Actualización automática cada 2 segundos | {time.strftime('%H:%M:%S')}",
+        "  Presiona CTRL+C para detener el servidor.",
+    ])
+    return "\033[2J\033[H" + "\n".join(lines) + "\n"
+
 
 # Base de conocimiento RAG defensiva integrada
 DEFENSIVE_KB = {
@@ -241,6 +357,18 @@ class TacticalHTTPRequestHandler(BaseHTTPRequestHandler):
         self._send_cors_headers()
         self.end_headers()
 
+    def _record_web_visitor(self, path: str) -> None:
+        if path == "/api/devices":
+            return
+        ip = self.client_address[0]
+        user_agent = self.headers.get("User-Agent", "Desconocido").strip()[:200]
+        if record_web_client(ip, user_agent):
+            print(
+                f"[{time.strftime('%H:%M:%S')}] Visitante web: {ip} | "
+                f"{user_agent or 'Agente desconocido'}",
+                flush=True,
+            )
+
     def _serve_json(self, data: Any, status_code: int = 200):
         body = json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
         self.send_response(status_code)
@@ -253,8 +381,35 @@ class TacticalHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+        self._record_web_visitor(path)
 
         # Rutas de API REST
+        if path == "/api/devices":
+            try:
+                requester_ip = ipaddress.ip_address(self.client_address[0])
+            except ValueError:
+                self._serve_json({"error": "Dirección de cliente inválida."}, 400)
+                return
+            if not requester_ip.is_loopback:
+                self._serve_json(
+                    {"error": "La lista de dispositivos solo está disponible desde este equipo."},
+                    403,
+                )
+                return
+            try:
+                lan_devices = get_lan_devices()
+                lan_error = None
+            except (OSError, subprocess.SubprocessError) as exc:
+                lan_devices = []
+                lan_error = f"No se pudo leer la caché ARP local: {exc}"
+            self._serve_json({
+                "web_clients": get_active_web_clients(),
+                "lan_devices": lan_devices,
+                "lan_error": lan_error,
+                "lan_source": "caché ARP local; puede no incluir todos los equipos",
+            })
+            return
+
         if path == "/api/status":
             local_ip = get_local_ip()
             data = {
@@ -290,8 +445,15 @@ class TacticalHTTPRequestHandler(BaseHTTPRequestHandler):
         if not clean_path or clean_path == "/":
             clean_path = "index.html"
 
-        file_path = PAGINA_DIR / clean_path
-        if not file_path.is_file() or not str(file_path.resolve()).startswith(str(PAGINA_DIR.resolve())):
+        source_file = PAGINA_DIR / clean_path
+        build_file = BUILD_DIR / clean_path
+        file_path = build_file if build_file.is_file() else source_file
+        resolved_file = file_path.resolve()
+        allowed_roots = (PAGINA_DIR.resolve(), BUILD_DIR.resolve())
+        if (
+            not file_path.is_file()
+            or not any(resolved_file.is_relative_to(root) for root in allowed_roots)
+        ):
             self.send_response(404)
             self._send_cors_headers()
             self.send_header("Content-Type", "text/plain; charset=utf-8")
@@ -323,6 +485,7 @@ class TacticalHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+        self._record_web_visitor(path)
 
         # Leer cuerpo de la petición
         content_len = int(self.headers.get("Content-Length", 0))
@@ -512,25 +675,28 @@ class TacticalHTTPRequestHandler(BaseHTTPRequestHandler):
         }
 
     def log_message(self, format, *args):
-        # Log simplificado para no saturar la consola
-        sys.stderr.write(f"[{time.strftime('%H:%M:%S')}] {format % args}\n")
+        if not DASHBOARD_ACTIVE:
+            sys.stderr.write(f"[{time.strftime('%H:%M:%S')}] {format % args}\n")
 
 
 def run_server(port: int = 8080):
-    """Inicia el servidor HTTP en 0.0.0.0 permitiendo acceso por Wi-Fi y Localhost."""
+    """Start the web server and keep a live WEP-SER-IP dashboard in the terminal."""
+    global DASHBOARD_ACTIVE
     local_ip = get_local_ip()
     server_address = ("0.0.0.0", port)
     httpd = HTTPServer(server_address, TacticalHTTPRequestHandler)
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
 
     banner = (
         "======================================================================\n"
-        r"     ____  _   _  ___  _   _ __   ____  __  ___  _   _ ____  " + "\n"
-        r"    / ___|| | | |/ _ \| \ | |\ \ / /  \/  |/ _ \| | | / ___| " + "\n"
-        r"   | |    | |_| | | | |  \| | \ V /| |\/| | | | | | | \___ \ " + "\n"
-        r"   | |___ |  _  | |_| | |\  |  | | | |  | | |_| | |_| |___) |" + "\n"
-        r"    \____||_| |_|\___/|_| \_|  |_| |_|  |_|\___/ \___/|____/ " + "\n"
+        r" __        __ ______ _____    _____ ______ _____      _____ _____  " + "\n"
+        r" \ \      / /|  ____|  __ \  / ____|  ____|  __ \    |_   _|  __ \ " + "\n"
+        r"  \ \ /\ / / | |__  | |__) || (___ | |__  | |__) |     | | | |__) |" + "\n"
+        r"   \ V  V /  |  __| |  ___/  \___ \|  __| |  _  /      | | |  ___/ " + "\n"
+        r"    \_/\_/   | |____| |      ____) | |____| | \ \ _   _| |_| |     " + "\n"
+        r"             |______|_|     |_____/|______|_|  \_\ |_|_____|_|     " + "\n"
         "                                                             \n"
-        "    [+] PLATAFORMA HÍBRIDA DE CIBERSEGURIDAD // HUD TÁCTICO WEB\n"
+        "    [+] WEP-SER-IP // MONITOR DE VISITANTES Y RED LOCAL\n"
         "======================================================================\n"
         f"  [>] ENLACE LOCAL (Localhost):  http://localhost:{port}\n"
         f"  [>] ENLACE WI-FI / RED LOCAL:  http://{local_ip}:{port}\n"
@@ -542,18 +708,83 @@ def run_server(port: int = 8080):
         "  Presiona CTRL+C para detener el servidor.\n"
         "======================================================================\n"
     )
-    print(banner)
-
+    last_arp_refresh = 0.0
+    lan_devices: List[Dict[str, str]] = []
+    lan_error = None
+    DASHBOARD_ACTIVE = True
+    server_thread.start()
     try:
-        httpd.serve_forever()
+        while True:
+            now = time.monotonic()
+            if now - last_arp_refresh >= 10:
+                try:
+                    lan_devices = get_lan_devices()
+                    lan_error = None
+                except (OSError, subprocess.SubprocessError) as exc:
+                    lan_devices = []
+                    lan_error = str(exc)
+                last_arp_refresh = now
+
+            dashboard = render_live_dashboard(
+                banner,
+                local_ip,
+                port,
+                get_active_web_clients(),
+                lan_devices,
+                lan_error or "",
+            )
+            sys.stdout.write(dashboard)
+            sys.stdout.flush()
+            time.sleep(2)
     except KeyboardInterrupt:
-        print("\n[!] Deteniendo servidor HTTP táctico...")
+        print("\n[!] Deteniendo WEP-SER-IP...")
+    finally:
+        DASHBOARD_ACTIVE = False
+        httpd.shutdown()
         httpd.server_close()
-        print("[✓] Servidor detenido de manera limpia.")
+        server_thread.join()
+        print("[✓] WEP-SER-IP detenido de manera limpia.")
+
+
+def print_devices(port: int) -> None:
+    """Print recent web visitors and known LAN neighbors from a running server."""
+    url = f"http://127.0.0.1:{port}/api/devices"
+    with urllib.request.urlopen(url, timeout=3) as response:
+        data = json.load(response)
+
+    print(f"Visitantes de la web (actividad en los últimos {WEB_CLIENT_ACTIVE_SECONDS} segundos):")
+    web_clients = data["web_clients"]
+    if web_clients:
+        for client in web_clients:
+            print(f"  {client['ip']} | visto {client['last_seen']} | {client['user_agent']}")
+    else:
+        print("  No hay visitantes web activos.")
+
+    print("\nDispositivos conocidos en la red local (caché ARP):")
+    lan_devices = data["lan_devices"]
+    if lan_devices:
+        for device in lan_devices:
+            print(f"  {device['ip']} | {device['mac']}")
+    else:
+        print("  La caché ARP no contiene dispositivos.")
+    print(f"  Fuente: {data['lan_source']}.")
+    if data["lan_error"]:
+        print(f"  Aviso: {data['lan_error']}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Servidor Web Táctico Anonymous")
     parser.add_argument("--port", "-p", type=int, default=8080, help="Puerto TCP a utilizar (por defecto: 8080)")
+    parser.add_argument(
+        "--devices",
+        action="store_true",
+        help="Mostrar visitantes recientes y dispositivos conocidos en la caché ARP local",
+    )
     args = parser.parse_args()
-    run_server(args.port)
+    if args.devices:
+        try:
+            print_devices(args.port)
+        except OSError as exc:
+            parser.error(f"No se pudo consultar el servidor en el puerto {args.port}: {exc}")
+    else:
+        run_server(args.port)

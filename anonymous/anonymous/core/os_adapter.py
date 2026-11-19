@@ -5,10 +5,13 @@ Provides cross-platform abstraction for Windows and Linux without Docker depende
 
 import sys
 import os
+import ipaddress
 import socket
 import subprocess
 from pathlib import Path
 from typing import Dict, Any, List, Optional
+
+import psutil
 
 
 class OSAdapter:
@@ -38,6 +41,42 @@ class OSAdapter:
             "local_ip": local_ip,
             "user": os.getenv("USERNAME" if self.is_windows else "USER", "unknown"),
         }
+
+    def get_private_network_interfaces(self) -> List[Dict[str, str]]:
+        """Return active interfaces with RFC1918 IPv4 addresses and their subnet."""
+        stats = psutil.net_if_stats()
+        interfaces = psutil.net_if_addrs()
+        private_ranges = (
+            ipaddress.ip_network("10.0.0.0/8"),
+            ipaddress.ip_network("172.16.0.0/12"),
+            ipaddress.ip_network("192.168.0.0/16"),
+        )
+        results: List[Dict[str, str]] = []
+
+        for name, addresses in interfaces.items():
+            interface_stats = stats.get(name)
+            if not interface_stats or not interface_stats.isup:
+                continue
+            for address in addresses:
+                if address.family != socket.AF_INET or not address.netmask:
+                    continue
+                try:
+                    interface = ipaddress.IPv4Interface(
+                        f"{address.address}/{address.netmask}"
+                    )
+                except (ipaddress.AddressValueError, ipaddress.NetmaskValueError):
+                    continue
+                if not any(interface.ip in network for network in private_ranges):
+                    continue
+                results.append(
+                    {
+                        "name": name,
+                        "address": str(interface.ip),
+                        "netmask": str(interface.netmask),
+                        "cidr": str(interface.network),
+                    }
+                )
+        return results
 
     def format_ping_command(self, host: str, count: int = 4) -> List[str]:
         """Adapts ping command syntax between Windows and Unix."""

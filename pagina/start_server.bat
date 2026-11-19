@@ -1,7 +1,7 @@
 @echo off
-title Anonymous Tactical HUD Server
+title WEP-SER-IP | Anonymous
 echo ======================================================================
-echo    Iniciando Servidor Web Tactico Anonymous en 0.0.0.0:8080...
+echo    Iniciando WEP-SER-IP en 0.0.0.0:8080...
 echo    Transmitiendo por senal Wi-Fi y Localhost
 echo ======================================================================
 cd /d "%~dp0"

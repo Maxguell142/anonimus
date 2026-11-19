@@ -48,16 +48,20 @@ Requisito: Docker Desktop + checkout `kali-mcp-main`. Endpoint MCP: `http://127.
 
 | Comando | Qué hace |
 | :--- | :--- |
-| `kali status` / `kali health` | Docker, compose.yml, salud MCP, sesión activa |
+| `kali status` / `kali health` | Docker, compose.yml, disponibilidad MCP y sesión activa |
 | `kali start` / `kali up` | `docker compose up -d` (HITL; gasta RAM) |
 | `kali stop` / `kali down` | `docker compose down` (HITL) |
 | `kali-start <objetivo>` | Carpeta de sesión **pasiva** en `~/.anonymous/kali_sessions/` |
+| `kali discover <CIDR>` | Descubrimiento Nmap `-sn` vía MCP; IPv4 privado, máximo `/24`, confirmación obligatoria |
 | `kali knowledge <tema>` | Busca en la copia local de playbooks markdown |
 | `kali-finish` | Cierra la sesión activa |
 | `kali-audit` | **No se ejecuta.** Mensaje de límite (sin explotación automática) |
 | `kali exec …` | **Bloqueado.** No hay shell libre hacia el contenedor |
 
 Frases: `levantá kali`, `estado de kali`, `parar kali`, `playbook ssh`, `cerrar sesión kali`.
+También se reconocen `iniciemos conexión con Kali`, `inicia Kali` y `conectemos con Kali Docker` para levantar el stack mediante Docker Compose, siempre con confirmación. Usa `kali status` para consultar conexión/health sin cambiar el estado del contenedor.
+Para descubrir una red: `kali discover 192.168.0.0/24` o pide un escaneo en lenguaje natural. Si no sabes el CIDR, dile que identifique tu red: Anonymous consulta las interfaces IPv4 privadas activas y te ofrece adaptador y subred para que elijas. La lista puede incluir WSL/Docker/Hyper-V; Anonymous no adivina cuál corresponde a tu LAN. Solo ofrece redes de hasta 256 direcciones. Después de la selección pide autorización explícita; solo entonces ejecuta por MCP Nmap host discovery (`-sn`), sin escanear puertos ni correr una auditoría. También se puede introducir manualmente CIDR o IPv4/máscara. Las preguntas sobre el resultado se responden con los datos estructurados del último descubrimiento; `echo-reply` indica respuesta en una IP, pero no demuestra por sí solo cuántos dispositivos físicos hay.
+Tras ejecutarlo, Gemini interpreta los datos estructurados si está configurado; de lo contrario se muestra un análisis local etiquetado. Las respuestas TCP reset se tratan como inciertas (podrían originarse en un gateway/intermediario) y no bastan para declarar un dispositivo desconocido. Verifica los resultados contra la lista de clientes del router.
 
 Alcance de sesión Anonymous: solo **passive**. Alcances credential/full del repo original no se inicializan aquí.
 

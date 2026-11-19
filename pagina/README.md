@@ -1,4 +1,4 @@
-# Página Web Táctica y Boceto del Proyecto Anonymous
+# WEP-SER-IP — Monitor Web y Página Táctica de Anonymous
 
 Esta carpeta contiene la implementación completa de la interfaz web, boceto interactivo y servidor HTTP local con transmisión por red Wi-Fi para el proyecto **Anonymous** (Plataforma Híbrida de Ciberseguridad).
 
@@ -21,7 +21,7 @@ Esta carpeta contiene la implementación completa de la interfaz web, boceto int
 ## 🚀 Cómo Iniciar el Servidor
 
 ### Opción 1: Con el archivo `.bat` (Recomendado en Windows)
-Haz doble clic sobre `start_server.bat`.
+Haz doble clic sobre `start_server.bat`. La consola WEP-SER-IP se mantiene abierta y actualiza el estado cada 2 segundos.
 
 ### Opción 2: Desde la Terminal (PowerShell / CMD)
 ```powershell
@@ -43,6 +43,19 @@ python server.py --port 8080
    http://localhost:8080
    ```
 
+## 👥 Ver visitantes y dispositivos desde la terminal
+
+La terminal del servidor mantiene una pantalla en vivo con las direcciones IP de quienes abrieron la página y siguen activos (actividad en los últimos 20 segundos), además de los equipos que figuran en la caché ARP del sistema. La página envía una señal de actividad cada 5 segundos mientras está abierta.
+
+Para hacer una consulta puntual desde otra consola:
+
+```powershell
+cd C:\Users\maxgu\Documents\anonimus\pagina
+python server.py --devices
+```
+
+Si iniciaste el servidor en otro puerto, indícalo también, por ejemplo `python server.py --devices --port 8081`. La lista de visitantes solo se puede consultar desde la misma computadora donde corre el servidor. La lista de red es pasiva: lee la caché ARP del sistema, por lo que puede no incluir todos los dispositivos conectados; no realiza sondeos de la red.
+
 ---
 
 ## ⚡ Funcionalidades Integradas en el Boceto
@@ -53,3 +66,4 @@ python server.py --port 8080
 4. **AgentShield HITL (Human-In-The-Loop):** Arnés de contención y barrera de autorización para prevenir escaneos a objetivos no autorizados.
 5. **Terminal Interactiva:** Soporte de comandos en tiempo real (`status`, `scan <ip>`, `ping <ip>`, `rag <norma>`, `ptt`, `findings`, `mode <modo>`, `help`).
 6. **Radar Holográfico 3D Canvas:** Renderizado dinámico a 60 FPS con mapeo de nodos descubiertos.
+7. **Glyph Stream:** Estela ligera de glifos cian que sigue el cursor, salpica al hacer clic y respeta la preferencia de movimiento reducido.
